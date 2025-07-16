@@ -15,7 +15,7 @@ const toggleSearch = () => searchView.classList.toggle("active");
 addEventOnElements(searchTogglers, "click", toggleSearch);
 
 
-// --- UPDATED SEARCH INTEGRATION WITH ZIP CODE SUPPORT ---
+// --- SEARCH INTEGRATION WITH ZIP CODE AND NAME PRIORITIZATION ---
 const searchField = document.querySelector("[data-search-field]");
 const searchResult = document.querySelector("[data-search-result]");
 let searchTimeout = null;
@@ -34,8 +34,6 @@ searchField.addEventListener("input", function () {
 
     if (searchField.value) {
         searchTimeout = setTimeout(() => {
-            // Check if the input is primarily numeric, suggesting a zip code.
-            // This regex allows for formats like "90210" and "90210,US".
             const isZipCode = /^[0-9\s,-]+$/.test(searchField.value);
             const searchUrl = isZipCode ? url.zip(searchField.value) : url.geo(searchField.value);
 
@@ -44,13 +42,10 @@ searchField.addEventListener("input", function () {
                 searchResult.classList.add("active");
                 searchResult.innerHTML = `<ul class="view-list" data-search-list></ul>`;
 
-                // The zip API returns an object, while the geo API returns an array.
-                // This line normalizes the data into an array for consistent handling.
                 const locations = Array.isArray(data) ? data : [data];
                 const searchList = searchResult.querySelector("[data-search-list]");
                 const items = [];
 
-                // Handle cases where no valid location is found.
                 if (!locations || locations.length === 0 || !locations[0].name) {
                     const noResultItem = document.createElement("li");
                     noResultItem.classList.add("view-item");
@@ -62,13 +57,14 @@ searchField.addEventListener("input", function () {
                 for (const { name, lat, lon, country, state } of locations) {
                     const searchItem = document.createElement("li");
                     searchItem.classList.add("view-item");
+                    // **FIX:** The link now includes the city name to ensure it's displayed correctly.
                     searchItem.innerHTML = `
                         <span class="m-icon">location_on</span>
                         <div>
                             <p class="item-title">${name}</p>
                             <p class="label-2 item-subtitle">${state || ""} ${country || ""}</p>
                         </div>
-                        <a href="#/weather?lat=${lat}&lon=${lon}" class="item-link has-state" aria-label="${name} weather" data-search-toggler></a>
+                        <a href="#/weather?lat=${lat}&lon=${lon}&name=${encodeURIComponent(name)}" class="item-link has-state" aria-label="${name} weather" data-search-toggler></a>
                     `;
                     searchList.appendChild(searchItem);
                     items.push(searchItem.querySelector("[data-search-toggler]"));
@@ -89,7 +85,13 @@ const loading = document.querySelector("[data-loading]");
 const currentLocationBtn = document.querySelector("[data-current-location-btn]");
 const errorContent = document.querySelector("[data-error-content]");
 
-export const updateWeather = (lat, lon) => {
+/**
+ * Render all weather data in HTML page
+ * @param {number} lat Latitude
+ * @param {number} lon Longitude
+ * @param {string} [locationName] - The name of the location from search results.
+ */
+export const updateWeather = (lat, lon, locationName) => {
     loading.style.display = "grid";
     container.style.display = "none";
     errorContent.style.display = "none";
@@ -104,7 +106,7 @@ export const updateWeather = (lat, lon) => {
     hourlySection.innerHTML = "";
     forecastSection.innerHTML = "";
 
-    if (window.location.hash === "#/current-location") {
+    if (window.location.hash.startsWith("#/current-location")) {
         currentLocationBtn.setAttribute("disabled", "");
     } else {
         currentLocationBtn.removeAttribute("disabled");
@@ -139,9 +141,19 @@ export const updateWeather = (lat, lon) => {
                 </li>
             </ul>
         `;
-        fetchData(url.reverseGeo(lat, lon), ([{ name, country }]) => {
-            card.querySelector("[data-location]").innerHTML = `${name}, ${country}`;
-        });
+        
+        // **FIX:** This logic now prioritizes the name from the search results.
+        if (locationName) {
+            // If a name is provided (from search), use it.
+            fetchData(url.reverseGeo(lat, lon), ([{ country }]) => {
+                card.querySelector("[data-location]").innerHTML = `${locationName}, ${country}`;
+            });
+        } else {
+            // Otherwise (for "Current Location"), find the name via reverse geocoding.
+            fetchData(url.reverseGeo(lat, lon), ([{ name, country }]) => {
+                card.querySelector("[data-location]").innerHTML = `${name}, ${country}`;
+            });
+        }
         currentWeatherSection.appendChild(card);
 
         fetchData(url.airPollution(lat, lon), (airPollution) => {
