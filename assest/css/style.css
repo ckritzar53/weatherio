@@ -995,3 +995,105 @@ footer .body-3:last-child {
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/*-----------------------------------*\
+ * #SETTINGS MODAL (Updated)
+\*-----------------------------------*/
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: hsla(0, 0%, 0%, 0.5);
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.25s ease;
+}
+
+.modal-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--surface);
+  color: var(--on-surface);
+  padding: 20px;
+  border-radius: var(--radius-16);
+  z-index: 11;
+  min-width: 320px;
+  box-shadow: var(--shadow-2);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.25s ease;
+}
+
+.modal-overlay.active,
+.modal-container.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--outline);
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+}
+
+.modal-header .icon-btn {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.setting-group {
+  margin-bottom: 20px;
+}
+
+.setting-group > .title-3,
+.setting-group > label.title-3 {
+  color: var(--on-surface-variant);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block: 8px;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+.setting-select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 10px 16px;
+  background-color: var(--background);
+  color: var(--on-surface);
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  font-size: var(--body-3);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dddae5'%3e%3cpath d='M7.41,8.59L12,13.17l4.59-4.58L18,10l-6,6l-6-6L7.41,8.59z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  transition: border-color 0.2s ease;
+}
+
+.setting-select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
