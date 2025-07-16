@@ -8,19 +8,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Your CSS File -->
     <link rel="stylesheet" href="assest/css/style.css">
-    <script type="module" src="./assest/js/app.js"></script>
-    <script type="module" src="./assest/js/route.js"></script>
+
+    <!-- Your JS Files (defer ensures HTML is loaded first) -->
+    <script type="module" src="./assest/js/api.js" defer></script>
+    <script type="module" src="./assest/js/route.js" defer></script>
+    <script type="module" src="./assest/js/app.js" defer></script>
 </head>
 <body>
     <header class="header">
         <div class="container">
             <a href="#" class="logo">
-                <img src="assest/images/logo.png" alt="logo">
+                <img src="assest/images/logo.png" width="150" alt="logo">
             </a>
             <div class="search-view" data-search-view>
                 <div class="search-wrapper">
-                    <input type="search" name="search" class="search-field" placeholder="search city ..." autocomplete="off" data-search-field>
+                    <input type="search" name="search" class="search-field" placeholder="Search city..." autocomplete="off" data-search-field>
                     <span class="m-icon leading-icon">search</span>
                     <button class="icon-btn leading-icon has-state" aria-label="close search" data-search-toggler>
                         <span class="m-icon">arrow_back</span>
@@ -45,11 +50,26 @@
 
     <main>
         <article class="container" data-container>
-            </article>
+            <!-- Basic layout structure added here -->
+            <div class="content-left">
+                <section class="section current-weather" aria-label="current weather" data-current-weather></section>
+                <section class="section forecast" aria-labelledby="forecast-label" data-5-day-forecast></section>
+            </div>
+            <div class="content-right">
+                <section class="section highlights" aria-labelledby="highlights-label" data-highlights></section>
+                <section class="section hourly-forecast" aria-label="hourly forecast" data-hourly-forecast></section>
+            </div>
+            <div class="loading" data-loading></div>
+        </article>
     </main>
 
     <section class="error-content" data-error-content>
-        </section>
+         <h2 class="heading">404</h2>
+         <p class="body-1">Page not found!</p>
+         <a href="#/current-location" class="btn-primary">
+             <span class="span">Go Home</span>
+         </a>
+    </section>
 
     <div class="modal-overlay" data-settings-overlay></div>
     <div class="modal-container" data-settings-modal>
@@ -103,11 +123,11 @@
             </div>
             <div class="setting-group">
                 <p class="title-3">Time Format</p>
-                <div class="radio-group" data-setting="timeFormat" data-value="12h">
+                <div class="radio-group" data-setting="timeFormat">
                     <input type="radio" id="time12" name="timeFormat" value="12h" checked>
                     <label for="time12">12-Hour</label>
                 </div>
-                <div class="radio-group" data-setting="timeFormat" data-value="24h">
+                <div class="radio-group" data-setting="timeFormat">
                     <input type="radio" id="time24" name="timeFormat" value="24h">
                     <label for="time24">24-Hour</label>
                 </div>
