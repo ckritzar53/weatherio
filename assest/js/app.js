@@ -14,6 +14,8 @@ const searchTogglers = document.querySelectorAll("[data-search-toggler]");
 const toggleSearch = () => searchView.classList.toggle("active");
 addEventOnElements(searchTogglers, "click", toggleSearch);
 
+
+// --- UPDATED SEARCH INTEGRATION WITH ZIP CODE SUPPORT ---
 const searchField = document.querySelector("[data-search-field]");
 const searchResult = document.querySelector("[data-search-result]");
 let searchTimeout = null;
@@ -21,6 +23,7 @@ const searchTimeoutDuration = 500;
 
 searchField.addEventListener("input", function () {
     searchTimeout && clearTimeout(searchTimeout);
+
     if (!searchField.value) {
         searchResult.classList.remove("active");
         searchResult.innerHTML = "";
@@ -31,11 +34,31 @@ searchField.addEventListener("input", function () {
 
     if (searchField.value) {
         searchTimeout = setTimeout(() => {
-            fetchData(url.geo(searchField.value), function (locations) {
+            // Check if the input is primarily numeric, suggesting a zip code.
+            // This regex allows for formats like "90210" and "90210,US".
+            const isZipCode = /^[0-9\s,-]+$/.test(searchField.value);
+            const searchUrl = isZipCode ? url.zip(searchField.value) : url.geo(searchField.value);
+
+            fetchData(searchUrl, function (data) {
                 searchField.classList.remove("searching");
                 searchResult.classList.add("active");
                 searchResult.innerHTML = `<ul class="view-list" data-search-list></ul>`;
+
+                // The zip API returns an object, while the geo API returns an array.
+                // This line normalizes the data into an array for consistent handling.
+                const locations = Array.isArray(data) ? data : [data];
+                const searchList = searchResult.querySelector("[data-search-list]");
                 const items = [];
+
+                // Handle cases where no valid location is found.
+                if (!locations || locations.length === 0 || !locations[0].name) {
+                    const noResultItem = document.createElement("li");
+                    noResultItem.classList.add("view-item");
+                    noResultItem.innerHTML = `<p class="item-title">No results found.</p>`;
+                    searchList.appendChild(noResultItem);
+                    return;
+                }
+
                 for (const { name, lat, lon, country, state } of locations) {
                     const searchItem = document.createElement("li");
                     searchItem.classList.add("view-item");
@@ -43,13 +66,14 @@ searchField.addEventListener("input", function () {
                         <span class="m-icon">location_on</span>
                         <div>
                             <p class="item-title">${name}</p>
-                            <p class="label-2 item-subtitle">${state || ""} ${country}</p>
+                            <p class="label-2 item-subtitle">${state || ""} ${country || ""}</p>
                         </div>
                         <a href="#/weather?lat=${lat}&lon=${lon}" class="item-link has-state" aria-label="${name} weather" data-search-toggler></a>
                     `;
-                    searchResult.querySelector("[data-search-list]").appendChild(searchItem);
+                    searchList.appendChild(searchItem);
                     items.push(searchItem.querySelector("[data-search-toggler]"));
                 }
+
                 addEventOnElements(items, "click", function () {
                     toggleSearch();
                     searchResult.classList.remove("active");
@@ -58,6 +82,7 @@ searchField.addEventListener("input", function () {
         }, searchTimeoutDuration);
     }
 });
+
 
 const container = document.querySelector("[data-container]");
 const loading = document.querySelector("[data-loading]");
@@ -174,7 +199,6 @@ export const updateWeather = (lat, lon) => {
                 hourlySection.querySelector("[data-wind]").appendChild(windLi);
             }
 
-            // --- CORRECTED 5-DAY FORECAST LOGIC ---
             forecastSection.innerHTML = `
                 <h2 class="title-2" id="forecast-label">5-Day Forecast</h2>
                 <div class="card card-lg forecast-card">
@@ -184,7 +208,6 @@ export const updateWeather = (lat, lon) => {
             const forecastListElement = forecastSection.querySelector("[data-forecast-list]");
             const uniqueForecastDays = [];
 
-            // Filter the forecast list to get only one forecast per day.
             const fiveDayForecast = forecastList.filter(forecast => {
                 const forecastDate = new Date(forecast.dt_txt).getDate();
                 if (!uniqueForecastDays.includes(forecastDate)) {
@@ -194,13 +217,11 @@ export const updateWeather = (lat, lon) => {
                 return false;
             });
 
-            // If the first unique forecast is for today, start from the second day.
             let startIndex = 0;
             if (new Date(fiveDayForecast[0].dt_txt).getDate() === new Date().getDate()) {
                 startIndex = 1;
             }
 
-            // Display the next 5 days.
             for (let i = startIndex; i < startIndex + 5 && i < fiveDayForecast.length; i++) {
                 const { main: { temp_max }, weather, dt_txt } = fiveDayForecast[i];
                 const [{ icon, description }] = weather;
