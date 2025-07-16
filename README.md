@@ -125,7 +125,7 @@ The `route.js` file manages the application's routing system. It defines routes 
 
 ## Contributing
 
-We welcome contributions to enhance the project! If you find any issues or have ideas for improvements, please don't hesitate to report them through GitHub issues. You can also suggest enhancements or submit pull requests to help make this project even better.
+We welcome contributions to enhance the project! If you find any issues or have ideas for improvements, please don't hesitate to report them through GitHub issues. You can also suggest enhancements or submit pull requests to help make this project even better. test
 
 ## License
 
