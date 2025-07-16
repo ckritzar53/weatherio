@@ -11,7 +11,18 @@ export const getDate = (dateUnix, timezone) => {
     return `${weekDayName} ${date.getUTCDate()}, ${monthName}`;
 };
 
+/**
+ * Returns the time in the specified format (12h or 24h).
+ * @param {number} timeUnix - The Unix timestamp in seconds.
+ * @param {number} timezone - The timezone offset from UTC in seconds.
+ * @param {string} timeFormat - The desired format, "12h" or "24h".
+ * @returns {string} The formatted time string.
+ */
 export const getTime = (timeUnix, timezone, timeFormat = '12h') => {
+    // This console log will help verify if the correct format is being passed.
+    // Check your browser's developer console (F12) to see this message.
+    console.log(`Formatting time with format: "${timeFormat}"`);
+
     const date = new Date((timeUnix + timezone) * 1000);
     let hours = date.getUTCHours();
     const minutes = date.getUTCMinutes().toString().padStart(2, '0');
@@ -21,7 +32,8 @@ export const getTime = (timeUnix, timezone, timeFormat = '12h') => {
         hours = hours % 12 || 12; // Convert 0 to 12 for 12 AM.
         return `${hours}:${minutes} ${period}`;
     }
-    // 24h format
+    
+    // Fallback to 24-hour format
     return `${hours.toString().padStart(2, '0')}:${minutes}`;
 };
 
