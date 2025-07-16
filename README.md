@@ -82,7 +82,7 @@ The `api.js` file contains functions to interact with the OpenWeather API. It in
 
 ### module.js
 
-The `module.js` file defines utility functions related to weather data conversion and calculations. It includes functions to convert temperature units from Kelvin to Celsius and Fahrenheit, convert wind speed units, and calculate air quality index (AQI) level and its corresponding message.
+The `module.js` file defines utility functions related to weather data conversion and calculations. It includes functions to convert temperature units from Kelvin to Celsius and Fahrenheit, convert wind speed units, and calculate the air quality index (AQI) level and its corresponding message.
 
 ### app.js
 
