@@ -1,37 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GQRS2F1JVF"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-GQRS2F1JVF');
-    </script>
-        
     <title>weatherio</title>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="title" content="weatherio">
-    <meta name="description" content="Explore accurate and real-time weather information for cities around the world with Weatherio. Get current weather conditions, 5-day forecasts, wind speed, sunrise and sunset times, air quality, humidity, and more.  Stay informed about weather changes effortlessly. Visit Weatherio now!">
-    
     <link rel="shortcut icon" href="favicon.svg" type="image/x-icon">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="assest/css/style.css">
-
     <script type="module" src="./assest/js/app.js"></script>
     <script type="module" src="./assest/js/route.js"></script>
 </head>
 <body>
     <header class="header">
         <div class="container">
-            <a href="" class="logo">
+            <a href="#" class="logo">
                 <img src="assest/images/logo.png" alt="logo">
             </a>
             <div class="search-view" data-search-view>
@@ -42,12 +26,14 @@
                         <span class="m-icon">arrow_back</span>
                     </button>
                 </div>
-                <div class="search-result" data-search-result>
-                </div>
+                <div class="search-result" data-search-result></div>
             </div>
             <div class="header-actions">
                 <button class="icon-btn has-state" aria-label="open search" data-search-toggler>
                     <span class="m-icon">search</span>
+                </button>
+                <button class="icon-btn has-state" aria-label="open settings" data-settings-btn>
+                    <span class="m-icon">settings</span>
                 </button>
                 <a href="#/current-location" class="btn-primary has-state" data-current-location-btn>
                     <span class="m-icon">my_location</span>
@@ -56,30 +42,77 @@
             </div>
         </div>
     </header>
+
     <main>
         <article class="container" data-container>
-            <div class="content-left">
-                <!-- current weater -->
-                <section class="section current-weather" aria-label="current weather" data-current-weather></section>
-                <!-- forecast -->
-                <section class="section forecast" aria-labelledby="forecast-label" data-5-day-forecast></section>
-            </div>
-            <div class="content-right">
-                <!-- highlight -->
-                <section class="section highlights" aria-labelledby="highlights-lable" data-highlights></section>
-                <section class="section hourly-forecast" aria-label="hourly forecast" data-hourly-forecast></section>
-            </div>
-            <div class="loading" data-loading>
-            </div>
-        </article>
+            </article>
     </main>
-    <!-- 404 Section -->
+
     <section class="error-content" data-error-content>
-        <h2 class="heading">404</h2>
-        <p class="body-1">Page not found!</p>
-        <a href="" class="btn-primary">
-            <span class="span">Go Home</span>
-        </a>
-    </section>
+        </section>
+
+    <div class="modal-overlay" data-settings-overlay></div>
+    <div class="modal-container" data-settings-modal>
+        <div class="modal-header">
+            <h3 class="title-2">Settings</h3>
+            <button class="icon-btn" aria-label="close settings modal" data-settings-close>
+                <span class="m-icon">close</span>
+            </button>
+        </div>
+        <div class="modal-content">
+            <div class="setting-group">
+                <label for="temp-unit" class="title-3">Temperature</label>
+                <select id="temp-unit" class="setting-select" data-setting="temperature">
+                    <option value="celsius">Celsius (°C)</option>
+                    <option value="fahrenheit">Fahrenheit (°F)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="wind-unit" class="title-3">Wind Speed</label>
+                <select id="wind-unit" class="setting-select" data-setting="windSpeed">
+                    <option value="ms">Meters per second (m/s)</option>
+                    <option value="kmh">Kilometers per hour (km/h)</option>
+                    <option value="mph">Miles per hour (mph)</option>
+                    <option value="bft">Beaufort (bft)</option>
+                    <option value="kn">Knots (kn)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="precip-unit" class="title-3">Precipitation</label>
+                <select id="precip-unit" class="setting-select" data-setting="precipitation">
+                    <option value="mm">Millimeters (mm)</option>
+                    <option value="in">Inches (in)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="pressure-unit" class="title-3">Pressure</label>
+                <select id="pressure-unit" class="setting-select" data-setting="pressure">
+                    <option value="hPa">Hectopascals (hPa)</option>
+                    <option value="mbar">Millibars (mbar)</option>
+                    <option value="inHg">Inches of mercury (inHg)</option>
+                    <option value="mmHg">Millimeters of mercury (mmHg)</option>
+                    <option value="kPa">Kilopascals (kPa)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="dist-unit" class="title-3">Distance</label>
+                <select id="dist-unit" class="setting-select" data-setting="distance">
+                    <option value="km">Kilometers (km)</option>
+                    <option value="mi">Miles (mi)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <p class="title-3">Time Format</p>
+                <div class="radio-group" data-setting="timeFormat" data-value="12h">
+                    <input type="radio" id="time12" name="timeFormat" value="12h" checked>
+                    <label for="time12">12-Hour</label>
+                </div>
+                <div class="radio-group" data-setting="timeFormat" data-value="24h">
+                    <input type="radio" id="time24" name="timeFormat" value="24h">
+                    <label for="time24">24-Hour</label>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
