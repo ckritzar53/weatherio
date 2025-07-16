@@ -2,12 +2,12 @@
 
 import { updateWeather, error404 } from "./app.js";
 
-// Default to London if geolocation fails or is denied
 const defaultLocation = { lat: 51.5073219, lon: -0.1276474 }; 
 
 const currentLocation = () => {
     window.navigator.geolocation.getCurrentPosition(res => {
         const { latitude, longitude } = res.coords;
+        // The location name is not passed here, so it will be looked up via reverse geocoding.
         updateWeather(latitude, longitude);
     }, err => {
         console.warn(`Geolocation Error: ${err.message}. Falling back to default location.`);
@@ -16,13 +16,14 @@ const currentLocation = () => {
 };
 
 const searchedLocation = (query) => {
-    // Example query: "lat=51.5073&lon=-0.1276"
     const params = new URLSearchParams(query);
     const lat = params.get("lat");
     const lon = params.get("lon");
+    const name = params.get("name"); // Get the location name from the URL.
 
     if (lat && lon) {
-        updateWeather(parseFloat(lat), parseFloat(lon));
+        // Pass the decoded name to the updateWeather function.
+        updateWeather(parseFloat(lat), parseFloat(lon), decodeURIComponent(name));
     } else {
         error404();
     }
@@ -38,24 +39,18 @@ const checkHash = () => {
     
     const [route, query] = requestURL.includes("?") ? requestURL.split("?") : [requestURL];
 
-    // If a valid route is found in our map, call its function
     if (routes.has(route)) {
         routes.get(route)(query);
     } else {
-        // If the route is invalid, show the 404 page
         error404();
     }
 };
 
 window.addEventListener("hashchange", checkHash);
 
-// This function runs when the page first loads
 window.addEventListener("load", () => {
-    // If there is no location hash in the URL, default to getting the current location
     if (!window.location.hash) {
         window.location.hash = "#/current-location";
     }
-    
-    // Process the URL hash to load the correct weather data
     checkHash();
 });
