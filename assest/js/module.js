@@ -32,24 +32,22 @@ export const aqiText = {
 };
 
 /**
- * **NEW:** Maps weather condition codes to CSS classes for dynamic backgrounds.
+ * **NEW:** Maps weather conditions to animated video backgrounds.
  * @param {number} id - Weather condition code from OpenWeatherMap API.
  * @param {string} icon - Weather icon code (e.g., "01d" for day, "01n" for night).
- * @returns {string} The corresponding CSS class name.
+ * @returns {string} The URL of the video file.
  */
-export const getBackgroundClass = (id, icon) => {
-    if (id >= 200 && id <= 232) return 'bg-thunderstorm';
-    if (id >= 300 && id <= 321) return 'bg-drizzle';
-    if (id >= 500 && id <= 531) return 'bg-rain';
-    if (id >= 600 && id <= 622) return 'bg-snow';
-    if (id >= 701 && id <= 781) return 'bg-mist';
-    if (id === 800) {
-        // Check if it's day or night for clear sky
-        return icon.includes('n') ? 'bg-clear-night' : 'bg-clear-day';
-    }
-    if (id >= 801 && id <= 804) return 'bg-clouds';
-
-    return 'bg-default'; // Fallback background
+export const getVideoForWeather = (id, icon) => {
+    const isDay = !icon.includes('n');
+    if (id >= 200 && id <= 232) return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/thunderstorm.mp4';
+    if (id >= 300 && id <= 321) return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/drizzle.mp4';
+    if (id >= 500 && id <= 531) return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/rain.mp4';
+    if (id >= 600 && id <= 622) return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/snow.mp4';
+    if (id >= 701 && id <= 781) return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/mist.mp4';
+    if (id === 800) return isDay ? 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clear-day.mp4' : 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clear-night.mp4';
+    if (id >= 801 && id <= 804) return isDay ? 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clouds-day.mp4' : 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clouds-night.mp4';
+    
+    return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clear-day.mp4'; // Default fallback
 };
 
 
