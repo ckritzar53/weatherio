@@ -106,7 +106,7 @@ body { background-color: var(--background); color: var(--on-background); font-si
 .header .container { justify-content: space-between; }
 .header-actions { gap: 16px; }
 .header .btn-primary { padding-inline: 12px; }
-.search-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--surface); color: var(--on-surface); clip-path: circle(4% at calc(100% - 102px) 5%); opacity: 0; visibility: hidden; z-index: 4; transition: clip-path 500ms ease; }
+.search-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--surface); color: var(--on-surface); clip-path: circle(4% at calc(100% - 102px) 5%); opacity: 0; visibility: hidden; z-index: 5; transition: clip-path 500ms ease; }
 .search-view.active { opacity: 1; visibility: visible; clip-path: circle(130% at 73% 5%); }
 .search-wrapper { position: relative; border-block-end: 1px solid var(--outline); }
 .search-wrapper::before { content: ""; position: absolute; top: 50%; right: 16px; transform: translateY(-50%); width: 24px; height: 24px; border: 3px solid var(--on-surface); border-block-start-color: transparent; border-radius: var(--radius-circle); animation: loading 500ms linear infinite; display: none; }
@@ -126,6 +126,7 @@ article.container { position: relative; display: grid; grid-template-columns: mi
 article.container::-webkit-scrollbar-thumb { background-color: transparent; }
 article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { background-color: var(--white-alpha-8); }
 .section:not(:last-child) { margin-block-end: 16px; }
+.current-weather-card { position: relative; }
 .current-weather-card .weapper { margin-block: 12px; display: flex; gap: 8px; align-items: center; }
 .current-weather-card .weather-icon { margin-inline: auto; }
 .current-weather-card > .body-3 { text-transform: capitalize; }
@@ -179,6 +180,59 @@ article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { backgroun
 .setting-select { appearance: none; -webkit-appearance: none; width: 100%; padding: 10px 16px; background-color: var(--background); color: var(--on-surface); border: 1px solid var(--outline); border-radius: 8px; font-size: var(--body-3); cursor: pointer; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dddae5'%3e%3cpath d='M7.41,8.59L12,13.17l4.59-4.58L18,10l-6,6l-6-6L7.41,8.59z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 20px; transition: border-color 0.2s ease; }
 .setting-select:focus { border-color: var(--primary); outline: none; }
 
+/* Favorites Menu */
+.header-favorites { position: relative; }
+.favorites-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--surface);
+  border-radius: var(--radius-16);
+  padding: 8px;
+  box-shadow: var(--shadow-2);
+  min-width: 200px;
+  z-index: 4;
+  display: none;
+}
+.favorites-menu.active { display: block; }
+.favorites-menu .view-item {
+  height: auto;
+  padding: 8px 12px;
+}
+.favorites-menu .view-item:not(:last-child) { border-bottom: 1px solid var(--outline); }
+.favorites-menu .item-link { position: static; }
+.favorites-menu .item-title { font-weight: 600; }
+.favorites-menu .item-subtitle { font-size: 1.2rem; }
+
+/* Save Location Button */
+.add-favorite-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--on-surface-variant);
+}
+.add-favorite-btn .m-icon.active {
+  font-variation-settings: 'FILL' 1;
+  color: var(--primary);
+}
+
+/* UV Index Card */
+.highlight-card .progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--outline);
+  border-radius: var(--radius-pill);
+  margin-top: 8px;
+  overflow: hidden;
+}
+.highlight-card .progress-bar-inner {
+  height: 100%;
+  background-image: linear-gradient(to right, var(--bg-aqi-1), var(--bg-aqi-2), var(--bg-aqi-3), var(--bg-aqi-4), var(--bg-aqi-5));
+  border-radius: var(--radius-pill);
+}
+
+
 @media (min-width: 768px) {
   .container { padding: 24px; }
   .title-1 { --title-1: 2.4rem; }
@@ -209,16 +263,10 @@ article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { backgroun
   .card-lg { padding: 36px; }
   .card-sm { padding: 24px; }
   .highlight-card.two .card-item { column-gap: 24px; }
-  
-  /* --- CORRECTED RULE --- */
-  /* Only hide the search icon button on large screens */
-  .header .icon-btn[data-search-toggler] {
-    display: none;
-  }
-
+  .header .icon-btn[data-search-toggler] { display: none; }
   .logo img { width: 200px; }
   .header { position: relative; height: 120px; z-index: 4; }
-  .header .container { padding-block: 0; height: 100%; }
+  .header .container { padding-block: 0; height: 100%; justify-content: flex-start; gap: 24px; }
   .search-view, .search-view.active { all: unset; display: block; position: relative; width: 500px; animation: none; }
   .search-wrapper { border-block-end: none; }
   .search-wrapper > .m-icon { display: block; }
