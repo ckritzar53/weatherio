@@ -1,21 +1,12 @@
 'use strict';
 
-// Corrected: Array now starts with Sunday to match the getUTCDay() output.
 export const weekDayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-/**
- * Returns the date in "Weekday, Month Day" format.
- * @param {number} dateUnix - The Unix timestamp in seconds.
- * @param {number} timezone - The timezone offset from UTC in seconds.
- * @returns {string} The formatted date string.
- */
 export const getDate = (dateUnix, timezone) => {
     const date = new Date((dateUnix + timezone) * 1000);
     const weekDayName = weekDayNames[date.getUTCDay()];
     const monthName = monthNames[date.getUTCMonth()];
-    
-    // **FIX:** Changed the format to "Weekday, Month Day".
     return `${weekDayName}, ${monthName} ${date.getUTCDate()}`;
 };
 
@@ -26,7 +17,7 @@ export const getTime = (timeUnix, timezone, timeFormat = '12h') => {
 
     if (timeFormat === '12h') {
         const period = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12 || 12; // Convert 0 to 12 for 12 AM.
+        hours = hours % 12 || 12;
         return `${hours}:${minutes} ${period}`;
     }
     return `${hours.toString().padStart(2, '0')}:${minutes}`;
@@ -40,7 +31,23 @@ export const aqiText = {
     5: { level: "Very Poor", message: "Health warnings of emergency conditions. The entire population is more likely to be affected." }
 };
 
-// --- COMPLETE UNIT CONVERSION HELPERS ---
+/**
+ * **NEW:** Provides text and advice for different UV Index levels.
+ */
+export const uviText = {
+    1: { level: "Low", message: "No protection needed." },
+    2: { level: "Low", message: "No protection needed." },
+    3: { level: "Moderate", message: "Protection needed. Seek shade during midday hours." },
+    4: { level: "Moderate", message: "Protection needed. Seek shade during midday hours." },
+    5: { level: "Moderate", message: "Protection needed. Seek shade during midday hours." },
+    6: { level: "High", message: "Protection essential. Wear a hat and sunglasses." },
+    7: { level: "High", message: "Protection essential. Wear a hat and sunglasses." },
+    8: { level: "Very High", message: "Extra protection essential. Avoid being outside during midday." },
+    9: { level: "Very High", message: "Extra protection essential. Avoid being outside during midday." },
+    10: { level: "Very High", message: "Extra protection essential. Avoid being outside during midday." },
+    11: { level: "Extreme", message: "Extreme risk. Avoid being outside during midday." }
+};
+
 
 export const formatTemp = (temp, unit) => {
     if (unit === 'fahrenheit') {
