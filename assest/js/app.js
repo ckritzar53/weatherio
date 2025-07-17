@@ -103,7 +103,6 @@ export const updateWeather = (lat, lon, locationName) => {
     const distanceUnit = localStorage.getItem('distance') || 'km';
     const timeFormat = localStorage.getItem('timeFormat') || '12h';
 
-    // --- Reverted to multiple API calls for compatibility ---
     fetchData(url.currentWeather(lat, lon), (currentWeather) => {
         if (!currentWeather || !currentWeather.weather) {
             error404();
@@ -111,7 +110,12 @@ export const updateWeather = (lat, lon, locationName) => {
         }
 
         const { weather, dt: dateUnix, sys: { sunrise: sunriseUnixUTC, sunset: sunsetUnixUTC }, main: { temp, feels_like, pressure, humidity }, visibility, timezone } = currentWeather;
-        const [{ description, icon }] = weather;
+        const [{ description, icon, id: weatherId }] = weather;
+
+        // --- DYNAMIC BACKGROUND ---
+        const body = document.querySelector("body");
+        body.className = module.getBackgroundClass(weatherId, icon);
+
         const card = document.createElement("div");
         card.classList.add("card", "card-lg", "current-weather-card");
         card.innerHTML = `
@@ -185,11 +189,22 @@ export const updateWeather = (lat, lon, locationName) => {
             hourlySection.innerHTML = `<h2 class="title-2">Today at</h2><div class="slider-container"><ul class="slider-list" data-temp></ul><ul class="slider-list" data-wind></ul></div>`;
             for (const [index, data] of forecastList.entries()) {
                 if (index > 7) break;
-                const { dt: dateTimeUnix, main: { temp }, weather, wind: { deg: windDirection, speed: windSpeed } } = data;
+                const { dt: dateTimeUnix, main: { temp }, weather, wind: { deg: windDirection, speed: windSpeed }, pop } = data;
                 const [{ icon, description }] = weather;
                 const tempLi = document.createElement("li");
                 tempLi.classList.add("slider-item");
-                tempLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, timeFormat)}</p><img src="./assest/images/weather_icons/${icon}.png" width="48" height="48" loading="lazy" alt="${description}" class="weather-icon" title="${description}"><p class="body-3">${module.formatTemp(temp, tempUnit)}</p></div>`;
+                // **NEW:** Added precipitation chance to hourly forecast
+                tempLi.innerHTML = `
+                    <div class="card card-sm slider-card">
+                        <p class="body-3">${module.getTime(dateTimeUnix, timezone, timeFormat)}</p>
+                        <img src="./assest/images/weather_icons/${icon}.png" width="48" height="48" loading="lazy" alt="${description}" class="weather-icon" title="${description}">
+                        <p class="body-3">${module.formatTemp(temp, tempUnit)}</p>
+                        <div class="card-item">
+                            <span class="m-icon">water_drop</span>
+                            <p class="label-1">${Math.round(pop * 100)}%</p>
+                        </div>
+                    </div>
+                `;
                 hourlySection.querySelector("[data-temp]").appendChild(tempLi);
                 const windLi = document.createElement("li");
                 windLi.classList.add("slider-item");
@@ -205,7 +220,6 @@ export const updateWeather = (lat, lon, locationName) => {
             `;
             const forecastListElement = forecastSection.querySelector("[data-forecast-list]");
             const uniqueForecastDays = [];
-
             const fiveDayForecast = forecastList.filter(forecast => {
                 const forecastDate = new Date(forecast.dt_txt).getDate();
                 if (!uniqueForecastDays.includes(forecastDate)) {
@@ -221,17 +235,20 @@ export const updateWeather = (lat, lon, locationName) => {
             }
 
             for (let i = startIndex; i < startIndex + 5 && i < fiveDayForecast.length; i++) {
-                const { main: { temp_max }, weather, dt_txt } = fiveDayForecast[i];
+                const { main: { temp_max }, weather, dt_txt, pop } = fiveDayForecast[i];
                 const [{ icon, description }] = weather;
                 const date = new Date(dt_txt);
                 const li = document.createElement("li");
                 li.classList.add("card-item");
+                // **NEW:** Added precipitation chance to 5-day forecast
                 li.innerHTML = `
                     <div class="icon-wrapper">
                         <img src="./assest/images/weather_icons/${icon}.png" width="36" height="36" alt="${description}" class="weather-icon" title="${description}">
-                        <span class="span">
-                            <p class="title-2">${module.formatTemp(temp_max, tempUnit)}</p>
-                        </span>
+                        <span class="span"><p class="title-2">${module.formatTemp(temp_max, tempUnit)}</p></span>
+                        <div class="card-item">
+                            <span class="m-icon">water_drop</span>
+                            <p class="label-1">${Math.round(pop * 100)}%</p>
+                        </div>
                     </div>
                     <p class="label-1">${module.monthNames[date.getUTCMonth()]} ${date.getDate()}</p>
                     <p class="label-1">${module.weekDayNames[date.getUTCDay()]}</p>
@@ -252,12 +269,10 @@ export const error404 = () => {
     errorContent.style.display = "flex";
 };
 
-// --- SETTINGS LOGIC ---
 const settingsBtn = document.querySelector("[data-settings-btn]");
 const settingsModal = document.querySelector("[data-settings-modal]");
 const settingsOverlay = document.querySelector("[data-settings-overlay]");
 const settingsCloseBtn = document.querySelector("[data-settings-close]");
-
 const toggleSettingsModal = () => {
     settingsModal.classList.toggle("active");
     settingsOverlay.classList.toggle("active");
