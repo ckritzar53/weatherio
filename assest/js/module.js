@@ -31,6 +31,12 @@ export const aqiText = {
     5: { level: "Very Poor", message: "Health warnings of emergency conditions. The entire population is more likely to be affected." }
 };
 
+/**
+ * **NEW:** Maps weather conditions to animated video backgrounds.
+ * @param {number} id - Weather condition code from OpenWeatherMap API.
+ * @param {string} icon - Weather icon code (e.g., "01d" for day, "01n" for night).
+ * @returns {string} The URL of the video file.
+ */
 export const getVideoForWeather = (id, icon) => {
     const isDay = !icon.includes('n');
     if (id >= 200 && id <= 232) return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/thunderstorm.mp4';
@@ -41,8 +47,9 @@ export const getVideoForWeather = (id, icon) => {
     if (id === 800) return isDay ? 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clear-day.mp4' : 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clear-night.mp4';
     if (id >= 801 && id <= 804) return isDay ? 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clouds-day.mp4' : 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clouds-night.mp4';
     
-    return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clear-day.mp4';
+    return 'https://storage.googleapis.com/gemini-prod-us-central1-1p-403331454558/v1/files/clear-day.mp4'; // Default fallback
 };
+
 
 export const formatTemp = (temp, unit) => {
     if (unit === 'fahrenheit') {
