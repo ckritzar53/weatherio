@@ -21,7 +21,6 @@ export const fetchData = (URL, callback) => {
 };
 
 export const url = {
-    // --- Reverted to standard API endpoints ---
     currentWeather(lat, lon) {
         return `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric`;
     },
@@ -34,9 +33,17 @@ export const url = {
     reverseGeo(lat, lon) {
         return `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=5`;
     },
+    /**
+     * URL for geocoding by city name.
+     * @param {string} query - Search query (e.g., "London").
+     */
     geo(query) {
         return `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5`;
     },
+    /**
+     * URL for geocoding by zip code.
+     * @param {string} query - Search query (e.g., "43551" or "43551,US").
+     */
     zip(query) {
         return `https://api.openweathermap.org/geo/1.0/zip?zip=${query}`;
     }
