@@ -15,7 +15,7 @@ const toggleSearch = () => searchView.classList.toggle("active");
 addEventOnElements(searchTogglers, "click", toggleSearch);
 
 
-// --- SIMPLIFIED AND MORE RELIABLE SEARCH LOGIC ---
+// --- RESTORED ZIP CODE SEARCH LOGIC ---
 const searchField = document.querySelector("[data-search-field]");
 const searchResult = document.querySelector("[data-search-result]");
 let searchTimeout = null;
@@ -34,17 +34,23 @@ searchField.addEventListener("input", function () {
 
     if (searchField.value) {
         searchTimeout = setTimeout(() => {
-            // **FIX:** Always use the 'geo' endpoint for both city and zip code searches.
-            // It's more flexible and provides better results.
-            fetchData(url.geo(searchField.value), function (locations) {
+            // **FIX:** Check if the input looks like a zip code.
+            const isZipCode = /^[0-9\s,-]+$/.test(searchField.value);
+            // Use the appropriate URL based on the input type.
+            const searchUrl = isZipCode ? url.zip(searchField.value) : url.geo(searchField.value);
+
+            fetchData(searchUrl, function (data) {
                 searchField.classList.remove("searching");
                 searchResult.classList.add("active");
                 searchResult.innerHTML = `<ul class="view-list" data-search-list></ul>`;
 
+                // Normalize data: zip returns an object, geo returns an array.
+                // This makes sure we always have an array to work with.
+                const locations = Array.isArray(data) ? data : (data.name ? [data] : []);
                 const searchList = searchResult.querySelector("[data-search-list]");
                 const items = [];
 
-                if (!locations || locations.length === 0) {
+                if (locations.length === 0) {
                     const noResultItem = document.createElement("li");
                     noResultItem.classList.add("view-item");
                     noResultItem.innerHTML = `<p class="item-title">No results found.</p>`;
@@ -133,11 +139,8 @@ export const updateWeather = (lat, lon, locationName) => {
             </ul>
         `;
         
-        // **FIX:** This logic now fetches the state and includes it in the display.
         fetchData(url.reverseGeo(lat, lon), ([{ name, country, state }]) => {
-            // Use the locationName from search if available, otherwise use the name from reverse geocoding.
             const displayName = locationName || name;
-            // Display as "City, ST, Country" if state is available.
             const locationString = `${displayName}, ${state ? `${state}, ` : ''}${country}`;
             card.querySelector("[data-location]").innerHTML = locationString;
         });
