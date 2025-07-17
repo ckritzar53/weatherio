@@ -29,14 +29,18 @@ searchField.addEventListener("input", function () {
 
     if (searchField.value) {
         searchTimeout = setTimeout(() => {
-            fetchData(url.geo(searchField.value), function (locations) {
+            const isZipCode = /^[0-9\s,-]+$/.test(searchField.value);
+            const searchUrl = isZipCode ? url.zip(searchField.value) : url.geo(searchField.value);
+
+            fetchData(searchUrl, function (data) {
                 searchField.classList.remove("searching");
                 searchResult.classList.add("active");
                 searchResult.innerHTML = `<ul class="view-list" data-search-list></ul>`;
+                const locations = Array.isArray(data) ? data : (data.name ? [data] : []);
                 const searchList = searchResult.querySelector("[data-search-list]");
                 const items = [];
 
-                if (!locations || locations.length === 0) {
+                if (locations.length === 0) {
                     const noResultItem = document.createElement("li");
                     noResultItem.classList.add("view-item");
                     noResultItem.innerHTML = `<p class="item-title">No results found.</p>`;
@@ -93,45 +97,27 @@ export const updateWeather = (lat, lon, locationName) => {
         currentLocationBtn.removeAttribute("disabled");
     }
 
-    // --- RENDER SAVED LOCATIONS IN DROPDOWN ---
-    renderFavorites();
+    const tempUnit = localStorage.getItem('temperature') || 'celsius';
+    const windUnit = localStorage.getItem('windSpeed') || 'ms';
+    const pressureUnit = localStorage.getItem('pressure') || 'hPa';
+    const distanceUnit = localStorage.getItem('distance') || 'km';
+    const timeFormat = localStorage.getItem('timeFormat') || '12h';
 
-    // --- FETCH ALL WEATHER DATA ---
-    fetchData(url.oneCall(lat, lon), (data) => {
-        if (!data) {
+    // --- Reverted to multiple API calls for compatibility ---
+    fetchData(url.currentWeather(lat, lon), (currentWeather) => {
+        if (!currentWeather || !currentWeather.weather) {
             error404();
             return;
         }
 
-        const {
-            current: {
-                dt: dateUnix,
-                sunrise: sunriseUnixUTC,
-                sunset: sunsetUnixUTC,
-                temp,
-                feels_like,
-                pressure,
-                humidity,
-                visibility,
-                weather,
-                uvi
-            },
-            hourly,
-            daily,
-            timezone_offset: timezone
-        } = data;
+        const { weather, dt: dateUnix, sys: { sunrise: sunriseUnixUTC, sunset: sunsetUnixUTC }, main: { temp, feels_like, pressure, humidity }, visibility, timezone } = currentWeather;
         const [{ description, icon }] = weather;
-
-        // --- CURRENT WEATHER CARD ---
         const card = document.createElement("div");
         card.classList.add("card", "card-lg", "current-weather-card");
         card.innerHTML = `
-            <button class="icon-btn add-favorite-btn" aria-label="Add to favorites" data-favorite-btn>
-                <span class="m-icon">star</span>
-            </button>
             <h2 class="title-2 card-title">Now</h2>
             <div class="weapper">
-                <p class="heading">${module.formatTemp(temp, localStorage.getItem('temperature') || 'celsius')}</p>
+                <p class="heading">${module.formatTemp(temp, tempUnit)}</p>
                 <img src="./assest/images/weather_icons/${icon}.png" width="64" height="64" alt="${description}" class="weather-icon">
             </div>
             <p class="body-3">${description}</p>
@@ -147,166 +133,124 @@ export const updateWeather = (lat, lon, locationName) => {
             </ul>
         `;
         
-        // Handle location name display
-        const locationElement = card.querySelector("[data-location]");
-        const locationData = { lat, lon, name: locationName };
-        updateLocationName(locationElement, locationData);
-
-        // Handle favorite button state and click event
-        const favoriteBtn = card.querySelector("[data-favorite-btn]");
-        const favoriteIcon = favoriteBtn.querySelector(".m-icon");
-        if (isFavorite(locationData)) {
-            favoriteIcon.classList.add("active");
-        }
-        favoriteBtn.addEventListener("click", () => toggleFavorite(favoriteBtn, locationData));
-
+        fetchData(url.reverseGeo(lat, lon), ([{ name, country, state }]) => {
+            const displayName = locationName || name;
+            const locationString = `${displayName}, ${state ? `${state}, ` : ''}${country}`;
+            card.querySelector("[data-location]").innerHTML = locationString;
+        });
         currentWeatherSection.appendChild(card);
 
-        // --- HIGHLIGHTS ---
-        const highlightsCard = document.createElement("div");
-        highlightsCard.classList.add("card", "card-lg");
-
-        const uviValue = Math.round(uvi);
-        const uviData = module.uviText[uviValue] || module.uviText[11]; // Default to extreme if out of range
-
-        highlightsCard.innerHTML = `
-            <h2 class="title-2" id="highlights-label">Today's Highlights</h2>
-            <div class="highlight-list">
-                <div class="card card-sm highlight-card">
-                    <h3 class="title-3">UV Index</h3>
-                    <div class="wrapper">
-                        <span class="m-icon">wb_sunny</span>
-                        <p class="title-1">${uviValue}</p>
+        fetchData(url.airPollution(lat, lon), (airPollution) => {
+            if (!airPollution || !airPollution.list) return;
+            const [{ main: { aqi }, components: { no2, o3, so2, pm2_5 } }] = airPollution.list;
+            const card = document.createElement("div");
+            card.classList.add("card", "card-lg");
+            card.innerHTML = `
+                <h2 class="title-2" id="highlights-label">Today's Highlights</h2>
+                <div class="highlight-list">
+                    <div class="card card-sm highlight-card one">
+                        <h3 class="title-3">Air Quality Index</h3>
+                        <div class="wrapper">
+                            <span class="m-icon">air</span>
+                            <ul class="card-list">
+                                <li class="card-item"><p class="title-1">${pm2_5.toPrecision(3)}</p><p class="label-1">PM<sub>2.5</sub></p></li>
+                                <li class="card-item"><p class="title-1">${so2.toPrecision(3)}</p><p class="label-1">SO<sub>2</sub></p></li>
+                                <li class="card-item"><p class="title-1">${no2.toPrecision(3)}</p><p class="label-1">NO<sub>2</sub></p></li>
+                                <li class="card-item"><p class="title-1">${o3.toPrecision(3)}</p><p class="label-1">O<sub>3</sub></p></li>
+                            </ul>
+                        </div>
+                        <span class="badge aqi-${aqi} label-${aqi}" title="${module.aqiText[aqi].message}">${module.aqiText[aqi].level}</span>
                     </div>
-                    <p class="label-1">${uviData.level}</p>
-                    <div class="progress-bar">
-                      <div class="progress-bar-inner" style="width: ${(uviValue / 11) * 100}%"></div>
-                    </div>
-                </div>
-                <div class="card card-sm highlight-card two">
-                    <h3 class="title-3">Sunrise & Sunset</h3>
-                    <div class="wrapper">
-                        <div class="card-list">
-                            <div class="card-item"><span class="m-icon">clear_day</span><div><p class="label-1">Sunrise</p><p class="title-1">${module.getTime(sunriseUnixUTC, timezone, localStorage.getItem('timeFormat') || '12h')}</p></div></div>
-                            <div class="card-item"><span class="m-icon">clear_night</span><div><p class="label-1">Sunset</p><p class="title-1">${module.getTime(sunsetUnixUTC, timezone, localStorage.getItem('timeFormat') || '12h')}</p></div></div>
+                    <div class="card card-sm highlight-card two">
+                        <h3 class="title-3">Sunrise & Sunset</h3>
+                        <div class="wrapper">
+                            <div class="card-list">
+                                <div class="card-item"><span class="m-icon">clear_day</span><div><p class="label-1">Sunrise</p><p class="title-1">${module.getTime(sunriseUnixUTC, timezone, timeFormat)}</p></div></div>
+                                <div class="card-item"><span class="m-icon">clear_night</span><div><p class="label-1">Sunset</p><p class="title-1">${module.getTime(sunsetUnixUTC, timezone, timeFormat)}</p></div></div>
+                            </div>
                         </div>
                     </div>
+                    <div class="card card-sm highlight-card"><h3 class="title-3">Humidity</h3><div class="wrapper"><span class="m-icon">humidity_percentage</span><p class="title-1">${humidity}<sub>%</sub></p></div></div>
+                    <div class="card card-sm highlight-card"><h3 class="title-3">Pressure</h3><div class="wrapper"><span class="m-icon">airwave</span><p class="title-1">${module.formatPressure(pressure, pressureUnit)}</p></div></div>
+                    <div class="card card-sm highlight-card"><h3 class="title-3">Visibility</h3><div class="wrapper"><span class="m-icon">visibility</span><p class="title-1">${module.formatDistance(visibility, distanceUnit)}</p></div></div>
+                    <div class="card card-sm highlight-card"><h3 class="title-3">Feels Like</h3><div class="wrapper"><span class="m-icon">thermostat</span><p class="title-1">${module.formatTemp(feels_like, tempUnit)}</p></div></div>
                 </div>
-                <div class="card card-sm highlight-card"><h3 class="title-3">Humidity</h3><div class="wrapper"><span class="m-icon">humidity_percentage</span><p class="title-1">${humidity}<sub>%</sub></p></div></div>
-                <div class="card card-sm highlight-card"><h3 class="title-3">Pressure</h3><div class="wrapper"><span class="m-icon">airwave</span><p class="title-1">${module.formatPressure(pressure, localStorage.getItem('pressure') || 'hPa')}</p></div></div>
-                <div class="card card-sm highlight-card"><h3 class="title-3">Visibility</h3><div class="wrapper"><span class="m-icon">visibility</span><p class="title-1">${module.formatDistance(visibility, localStorage.getItem('distance') || 'km')}</p></div></div>
-                <div class="card card-sm highlight-card"><h3 class="title-3">Feels Like</h3><div class="wrapper"><span class="m-icon">thermostat</span><p class="title-1">${module.formatTemp(feels_like, localStorage.getItem('temperature') || 'celsius')}</p></div></div>
-            </div>
-        `;
-        highlightSection.appendChild(highlightsCard);
-
-        // --- HOURLY FORECAST ---
-        hourlySection.innerHTML = `<h2 class="title-2">Today at</h2><div class="slider-container"><ul class="slider-list" data-temp></ul><ul class="slider-list" data-wind></ul></div>`;
-        for (const [index, data] of hourly.entries()) {
-            if (index > 23) break; // Show next 24 hours
-            const { dt: dateTimeUnix, temp, weather, wind_deg: windDirection, wind_speed: windSpeed } = data;
-            const [{ icon, description }] = weather;
-            const tempLi = document.createElement("li");
-            tempLi.classList.add("slider-item");
-            tempLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, localStorage.getItem('timeFormat') || '12h')}</p><img src="./assest/images/weather_icons/${icon}.png" width="48" height="48" loading="lazy" alt="${description}" class="weather-icon" title="${description}"><p class="body-3">${module.formatTemp(temp, localStorage.getItem('temperature') || 'celsius')}</p></div>`;
-            hourlySection.querySelector("[data-temp]").appendChild(tempLi);
-            const windLi = document.createElement("li");
-            windLi.classList.add("slider-item");
-            windLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, localStorage.getItem('timeFormat') || '12h')}</p><img src="./assest/images/weather_icons/direction.png" width="48" height="48" loading="lazy" alt="wind direction" class="weather-icon" style="transform: rotate(${windDirection - 180}deg)"><p class="body-3">${module.formatWind(windSpeed, localStorage.getItem('windSpeed') || 'ms')}</p></div>`;
-            hourlySection.querySelector("[data-wind]").appendChild(windLi);
-        }
-
-        // --- 5-DAY FORECAST ---
-        forecastSection.innerHTML = `<h2 class="title-2" id="forecast-label">5-Day Forecast</h2><div class="card card-lg forecast-card"><ul data-forecast-list></ul></div>`;
-        const forecastListElement = forecastSection.querySelector("[data-forecast-list]");
-        for (let i = 1; i < 8 && i < daily.length; i++) {
-            const { dt, temp: { max: temp_max }, weather } = daily[i];
-            const [{ icon, description }] = weather;
-            const date = new Date(dt * 1000);
-            const li = document.createElement("li");
-            li.classList.add("card-item");
-            li.innerHTML = `
-                <div class="icon-wrapper">
-                    <img src="./assest/images/weather_icons/${icon}.png" width="36" height="36" alt="${description}" class="weather-icon" title="${description}">
-                    <span class="span"><p class="title-2">${module.formatTemp(temp_max, localStorage.getItem('temperature') || 'celsius')}</p></span>
-                </div>
-                <p class="label-1">${module.monthNames[date.getUTCMonth()]} ${date.getUTCDate()}</p>
-                <p class="label-1">${module.weekDayNames[date.getUTCDay()]}</p>
             `;
-            forecastListElement.appendChild(li);
-        }
+            highlightSection.appendChild(card);
+        });
 
-        loading.style.display = "none";
-        container.style.display = "grid";
-        container.classList.add("fade-in");
+        fetchData(url.forecast(lat, lon), (forecast) => {
+            if (!forecast || !forecast.list) return;
+            const { list: forecastList, city: { timezone } } = forecast;
+            hourlySection.innerHTML = `<h2 class="title-2">Today at</h2><div class="slider-container"><ul class="slider-list" data-temp></ul><ul class="slider-list" data-wind></ul></div>`;
+            for (const [index, data] of forecastList.entries()) {
+                if (index > 7) break;
+                const { dt: dateTimeUnix, main: { temp }, weather, wind: { deg: windDirection, speed: windSpeed } } = data;
+                const [{ icon, description }] = weather;
+                const tempLi = document.createElement("li");
+                tempLi.classList.add("slider-item");
+                tempLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, timeFormat)}</p><img src="./assest/images/weather_icons/${icon}.png" width="48" height="48" loading="lazy" alt="${description}" class="weather-icon" title="${description}"><p class="body-3">${module.formatTemp(temp, tempUnit)}</p></div>`;
+                hourlySection.querySelector("[data-temp]").appendChild(tempLi);
+                const windLi = document.createElement("li");
+                windLi.classList.add("slider-item");
+                windLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, timeFormat)}</p><img src="./assest/images/weather_icons/direction.png" width="48" height="48" loading="lazy" alt="wind direction" class="weather-icon" style="transform: rotate(${windDirection - 180}deg)"><p class="body-3">${module.formatWind(windSpeed, windUnit)}</p></div>`;
+                hourlySection.querySelector("[data-wind]").appendChild(windLi);
+            }
+
+            forecastSection.innerHTML = `
+                <h2 class="title-2" id="forecast-label">5-Day Forecast</h2>
+                <div class="card card-lg forecast-card">
+                    <ul data-forecast-list></ul>
+                </div>
+            `;
+            const forecastListElement = forecastSection.querySelector("[data-forecast-list]");
+            const uniqueForecastDays = [];
+
+            const fiveDayForecast = forecastList.filter(forecast => {
+                const forecastDate = new Date(forecast.dt_txt).getDate();
+                if (!uniqueForecastDays.includes(forecastDate)) {
+                    uniqueForecastDays.push(forecastDate);
+                    return true;
+                }
+                return false;
+            });
+
+            let startIndex = 0;
+            if (new Date(fiveDayForecast[0].dt_txt).getDate() === new Date().getDate()) {
+                startIndex = 1;
+            }
+
+            for (let i = startIndex; i < startIndex + 5 && i < fiveDayForecast.length; i++) {
+                const { main: { temp_max }, weather, dt_txt } = fiveDayForecast[i];
+                const [{ icon, description }] = weather;
+                const date = new Date(dt_txt);
+                const li = document.createElement("li");
+                li.classList.add("card-item");
+                li.innerHTML = `
+                    <div class="icon-wrapper">
+                        <img src="./assest/images/weather_icons/${icon}.png" width="36" height="36" alt="${description}" class="weather-icon" title="${description}">
+                        <span class="span">
+                            <p class="title-2">${module.formatTemp(temp_max, tempUnit)}</p>
+                        </span>
+                    </div>
+                    <p class="label-1">${module.monthNames[date.getUTCMonth()]} ${date.getDate()}</p>
+                    <p class="label-1">${module.weekDayNames[date.getUTCDay()]}</p>
+                `;
+                forecastListElement.appendChild(li);
+            }
+
+            loading.style.display = "none";
+            container.style.display = "grid";
+            container.classList.add("fade-in");
+        });
     });
 };
 
-export const error404 = () => errorContent.style.display = "flex";
-
-// --- FAVORITES LOGIC ---
-const favoritesContainer = document.querySelector("[data-favorites-container]");
-const favoritesToggler = document.querySelector("[data-favorites-toggler]");
-const favoritesMenu = document.querySelector("[data-favorites-menu]");
-
-const getFavorites = () => JSON.parse(localStorage.getItem("weatherio-favorites")) || [];
-
-const saveFavorites = (favorites) => {
-    localStorage.setItem("weatherio-favorites", JSON.stringify(favorites));
+export const error404 = () => {
+    loading.style.display = "none";
+    container.style.display = "none";
+    errorContent.style.display = "flex";
 };
-
-const isFavorite = ({ lat, lon }) => {
-    const favorites = getFavorites();
-    return favorites.some(fav => fav.lat === lat && fav.lon === lon);
-};
-
-const toggleFavorite = (button, locationData) => {
-    const favorites = getFavorites();
-    const { lat, lon, name } = locationData;
-    const favoriteIcon = button.querySelector(".m-icon");
-
-    if (isFavorite(locationData)) {
-        const updatedFavorites = favorites.filter(fav => fav.lat !== lat || fav.lon !== lon);
-        saveFavorites(updatedFavorites);
-        favoriteIcon.classList.remove("active");
-    } else {
-        // Ensure name is available before saving
-        if (!name) {
-            fetchData(url.reverseGeo(lat, lon), ([{ name: resolvedName }]) => {
-                favorites.push({ lat, lon, name: resolvedName });
-                saveFavorites(favorites);
-                renderFavorites();
-            });
-        } else {
-            favorites.push({ lat, lon, name });
-            saveFavorites(favorites);
-        }
-        favoriteIcon.classList.add("active");
-    }
-    renderFavorites();
-};
-
-const renderFavorites = () => {
-    const favorites = getFavorites();
-    favoritesMenu.innerHTML = ""; // Clear existing items
-    if (favorites.length > 0) {
-        favoritesContainer.style.display = "block";
-        favorites.forEach(({ lat, lon, name }) => {
-            const item = document.createElement("div");
-            item.classList.add("view-item");
-            item.innerHTML = `
-                <a href="#/weather?lat=${lat}&lon=${lon}&name=${encodeURIComponent(name)}" class="item-link">
-                    <p class="item-title">${name}</p>
-                </a>
-            `;
-            favoritesMenu.appendChild(item);
-        });
-    } else {
-        favoritesContainer.style.display = "none";
-    }
-};
-
-favoritesToggler.addEventListener("click", () => favoritesMenu.classList.toggle("active"));
 
 // --- SETTINGS LOGIC ---
 const settingsBtn = document.querySelector("[data-settings-btn]");
@@ -352,16 +296,3 @@ const loadPreferences = () => {
 };
 
 window.addEventListener('DOMContentLoaded', loadPreferences);
-
-// --- HELPER FUNCTION FOR LOCATION NAME ---
-function updateLocationName(element, { lat, lon, name }) {
-    if (name) {
-        fetchData(url.reverseGeo(lat, lon), ([{ country, state }]) => {
-            element.innerHTML = `${name}, ${state ? `${state}, ` : ''}${country || ''}`;
-        });
-    } else {
-        fetchData(url.reverseGeo(lat, lon), ([{ name: resolvedName, country, state }]) => {
-            element.innerHTML = `${resolvedName}, ${state ? `${state}, ` : ''}${country || ''}`;
-        });
-    }
-}
