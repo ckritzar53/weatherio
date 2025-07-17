@@ -16,24 +16,30 @@ export const fetchData = (URL, callback) => {
         .then(data => callback(data))
         .catch(err => {
             console.error("API Fetch Error:", err);
-            callback(null); // Pass null on error to be handled in the app.
+            callback([]); // Return an empty array on error to prevent crashes.
         });
 };
 
 export const url = {
     /**
-     * **UPGRADED:** URL for the One Call API, which provides all necessary data.
-     * @param {number} lat - Latitude.
-     * @param {number} lon - Longitude.
+     * **FIX:** Correctly formats the URL with lat= and lon=
      */
-    oneCall(lat, lon) {
-        return `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&units=metric&exclude=minutely`;
+    currentWeather(lat, lon) {
+        return `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric`;
     },
-    /**
-     * URL for geocoding by city name or zip code.
-     * @param {string} query - Search query (e.g., "London", "90210").
-     */
+    forecast(lat, lon) {
+        return `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric`;
+    },
+    airPollution(lat, lon) {
+        return `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}`;
+    },
+    reverseGeo(lat, lon) {
+        return `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=5`;
+    },
     geo(query) {
         return `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5`;
+    },
+    zip(query) {
+        return `https://api.openweathermap.org/geo/1.0/zip?zip=${query}`;
     }
 };
