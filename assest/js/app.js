@@ -35,18 +35,14 @@ searchField.addEventListener("input", function () {
 
     if (searchField.value) {
         searchTimeout = setTimeout(() => {
-            const isZipCode = /^[0-9\s,-]+$/.test(searchField.value);
-            const searchUrl = isZipCode ? url.zip(searchField.value) : url.geo(searchField.value);
-
-            fetchData(searchUrl, function (data) {
+            fetchData(url.geo(searchField.value), function (locations) {
                 searchField.classList.remove("searching");
                 searchResult.classList.add("active");
                 searchResult.innerHTML = `<ul class="view-list" data-search-list></ul>`;
-                const locations = Array.isArray(data) ? data : (data.name ? [data] : []);
                 const searchList = searchResult.querySelector("[data-search-list]");
                 const items = [];
 
-                if (locations.length === 0) {
+                if (!locations || locations.length === 0) {
                     const noResultItem = document.createElement("li");
                     noResultItem.classList.add("view-item");
                     noResultItem.innerHTML = `<p class="item-title">No results found.</p>`;
@@ -121,15 +117,13 @@ export const updateWeather = (lat, lon, locationName) => {
             if (backgroundVideo.src !== videoSrc) {
                 backgroundVideo.src = videoSrc;
                 backgroundVideo.load();
-                backgroundVideo.play();
+                backgroundVideo.play().catch(e => console.error("Video play failed:", e));
             }
             backgroundVideo.classList.add("visible");
         }
 
         const card = document.createElement("div");
         card.classList.add("card", "card-lg", "current-weather-card");
-        
-        // **FIX:** Added the favorites button back into the HTML template.
         card.innerHTML = `
             <button class="icon-btn add-favorite-btn" aria-label="Add to favorites" data-favorite-btn>
                 <span class="m-icon">star</span>
