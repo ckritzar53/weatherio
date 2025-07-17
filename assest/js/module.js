@@ -4,11 +4,19 @@
 export const weekDayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 export const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+/**
+ * Returns the date in "Weekday, Month Day" format.
+ * @param {number} dateUnix - The Unix timestamp in seconds.
+ * @param {number} timezone - The timezone offset from UTC in seconds.
+ * @returns {string} The formatted date string.
+ */
 export const getDate = (dateUnix, timezone) => {
     const date = new Date((dateUnix + timezone) * 1000);
     const weekDayName = weekDayNames[date.getUTCDay()];
     const monthName = monthNames[date.getUTCMonth()];
-    return `${weekDayName} ${date.getUTCDate()}, ${monthName}`;
+    
+    // **FIX:** Changed the format to "Weekday, Month Day".
+    return `${weekDayName}, ${monthName} ${date.getUTCDate()}`;
 };
 
 export const getTime = (timeUnix, timezone, timeFormat = '12h') => {
@@ -26,7 +34,7 @@ export const getTime = (timeUnix, timezone, timeFormat = '12h') => {
 
 export const aqiText = {
     1: { level: "Good", message: "Air quality is considered satisfactory, and air pollution poses little or no risk." },
-    2: { level: "Fair", message: "Air quality is acceptable; however, for some pollutants, there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution." },
+    2: { level: "Fair", message: "Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution." },
     3: { level: "Moderate", message: "Members of sensitive groups may experience health effects. The general public is not likely to be affected." },
     4: { level: "Poor", message: "Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects." },
     5: { level: "Very Poor", message: "Health warnings of emergency conditions. The entire population is more likely to be affected." }
