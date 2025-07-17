@@ -15,7 +15,6 @@ const toggleSearch = () => searchView.classList.toggle("active");
 addEventOnElements(searchTogglers, "click", toggleSearch);
 
 
-// --- SEARCH INTEGRATION WITH ZIP CODE AND NAME PRIORITIZATION ---
 const searchField = document.querySelector("[data-search-field]");
 const searchResult = document.querySelector("[data-search-result]");
 let searchTimeout = null;
@@ -57,7 +56,6 @@ searchField.addEventListener("input", function () {
                 for (const { name, lat, lon, country, state } of locations) {
                     const searchItem = document.createElement("li");
                     searchItem.classList.add("view-item");
-                    // **FIX:** The link now includes the city name to ensure it's displayed correctly.
                     searchItem.innerHTML = `
                         <span class="m-icon">location_on</span>
                         <div>
@@ -85,12 +83,6 @@ const loading = document.querySelector("[data-loading]");
 const currentLocationBtn = document.querySelector("[data-current-location-btn]");
 const errorContent = document.querySelector("[data-error-content]");
 
-/**
- * Render all weather data in HTML page
- * @param {number} lat Latitude
- * @param {number} lon Longitude
- * @param {string} [locationName] - The name of the location from search results.
- */
 export const updateWeather = (lat, lon, locationName) => {
     loading.style.display = "grid";
     container.style.display = "none";
@@ -142,14 +134,11 @@ export const updateWeather = (lat, lon, locationName) => {
             </ul>
         `;
         
-        // **FIX:** This logic now prioritizes the name from the search results.
         if (locationName) {
-            // If a name is provided (from search), use it.
             fetchData(url.reverseGeo(lat, lon), ([{ country }]) => {
                 card.querySelector("[data-location]").innerHTML = `${locationName}, ${country}`;
             });
         } else {
-            // Otherwise (for "Current Location"), find the name via reverse geocoding.
             fetchData(url.reverseGeo(lat, lon), ([{ name, country }]) => {
                 card.querySelector("[data-location]").innerHTML = `${name}, ${country}`;
             });
@@ -241,6 +230,7 @@ export const updateWeather = (lat, lon, locationName) => {
 
                 const li = document.createElement("li");
                 li.classList.add("card-item");
+                // **FIX:** Changed the date format to "Month Day"
                 li.innerHTML = `
                     <div class="icon-wrapper">
                         <img src="./assest/images/weather_icons/${icon}.png" width="36" height="36" alt="${description}" class="weather-icon" title="${description}">
@@ -248,7 +238,7 @@ export const updateWeather = (lat, lon, locationName) => {
                             <p class="title-2">${module.formatTemp(temp_max, tempUnit)}</p>
                         </span>
                     </div>
-                    <p class="label-1">${date.getDate()} ${module.monthNames[date.getUTCMonth()]}</p>
+                    <p class="label-1">${module.monthNames[date.getUTCMonth()]} ${date.getDate()}</p>
                     <p class="label-1">${module.weekDayNames[date.getUTCDay()]}</p>
                 `;
                 forecastListElement.appendChild(li);
