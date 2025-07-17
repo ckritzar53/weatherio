@@ -2,7 +2,7 @@
 
 // Corrected: Array now starts with Sunday to match the getUTCDay() output.
 export const weekDayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export const monthNames = ["January", "Febuary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export const getDate = (dateUnix, timezone) => {
     const date = new Date((dateUnix + timezone) * 1000);
