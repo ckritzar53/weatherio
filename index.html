@@ -13,9 +13,15 @@
     <script type="module" src="./assest/js/route.js" defer></script>
 </head>
 <body>
+    <!-- Animated Video Background -->
+    <div class="video-background">
+        <video autoplay loop muted playsinline id="background-video"></video>
+    </div>
+
     <header class="header">
         <div class="container">
-            <!-- Favorites Dropdown -->
+            
+            <!-- Favorites Dropdown Menu -->
             <div class="header-favorites" data-favorites-container>
                 <button class="icon-btn has-state" aria-label="open favorites" data-favorites-toggler>
                     <span class="m-icon">favorite</span>
@@ -51,14 +57,10 @@
 
     <main>
         <article class="container" data-container>
-            <div class="content-left">
-                <section class="section current-weather" aria-label="current weather" data-current-weather></section>
-                <section class="section forecast" aria-labelledby="forecast-label" data-5-day-forecast></section>
-            </div>
-            <div class="content-right">
-                <section class="section highlights" aria-labelledby="highlights-label" data-highlights></section>
-                <section class="section hourly-forecast" aria-label="hourly forecast" data-hourly-forecast></section>
-            </div>
+            <section class="section current-weather" aria-label="current weather" data-current-weather></section>
+            <section class="section highlights" aria-labelledby="highlights-label" data-highlights></section>
+            <section class="section hourly-forecast" aria-label="hourly forecast" data-hourly-forecast></section>
+            <section class="section forecast" aria-labelledby="forecast-label" data-5-day-forecast></section>
             <div class="loading" data-loading></div>
         </article>
     </main>
