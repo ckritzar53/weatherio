@@ -56,16 +56,7 @@ button { cursor: pointer; }
 sub { vertical-align: baseline; }
 sup { vertical-align: top; }
 html { font-family: var(--ff-nunito-sans); font-size: 10px; scroll-behavior: smooth; }
-body {
-  background-color: var(--background);
-  color: var(--on-background);
-  font-size: var(--body-3);
-  /* New properties for dynamic backgrounds */
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  transition: background-image 500ms ease;
-}
+body { background-color: var(--background); color: var(--on-background); font-size: var(--body-3); }
 :focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background-color: var(--white-alpha-8); border-radius: var(--radius-pill); }
@@ -189,25 +180,41 @@ article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { backgroun
 .setting-select { appearance: none; -webkit-appearance: none; width: 100%; padding: 10px 16px; background-color: var(--background); color: var(--on-surface); border: 1px solid var(--outline); border-radius: 8px; font-size: var(--body-3); cursor: pointer; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dddae5'%3e%3cpath d='M7.41,8.59L12,13.17l4.59-4.58L18,10l-6,6l-6-6L7.41,8.59z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 20px; transition: border-color 0.2s ease; }
 .setting-select:focus { border-color: var(--primary); outline: none; }
 
-/* Dynamic Backgrounds */
-.bg-clear-day { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1590077428593-a55d22650354?q=80&w=2284&auto=format&fit=crop'); }
-.bg-clear-night { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1472552944129-b035e9ea3744?q=80&w=2274&auto=format&fit=crop'); }
-.bg-clouds { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1499956827185-0d63ee78a910?q=80&w=2248&auto=format&fit=crop'); }
-.bg-rain, .bg-drizzle { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1515694346937-94d85e41e622?q=80&w=2187&auto=format&fit=crop'); }
-.bg-snow { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1544274411-052d8a38c6a2?q=80&w=2274&auto=format&fit=crop'); }
-.bg-thunderstorm { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1605727226352-8d93a7e036f3?q=80&w=2274&auto=format&fit=crop'); }
-.bg-mist { background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1487621167305-5d248087c82a?q=80&w=2276&auto=format&fit=crop'); }
-
-/* Precipitation Chance */
-.hourly-forecast .slider-item .card-item,
-.forecast-card .card-item .icon-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+/* Favorites Menu */
+.header-favorites { position: relative; }
+.favorites-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--surface);
+  border-radius: var(--radius-16);
+  padding: 8px;
+  box-shadow: var(--shadow-2);
+  min-width: 200px;
+  z-index: 4;
+  display: none;
 }
-.hourly-forecast .slider-item .card-item .m-icon {
-  font-size: 1.6rem;
+.favorites-menu.active { display: block; }
+.favorites-menu .view-item {
+  height: auto;
+  padding: 8px 12px;
+}
+.favorites-menu .view-item:not(:last-child) { border-bottom: 1px solid var(--outline); }
+.favorites-menu .item-link { position: static; }
+.favorites-menu .item-title { font-weight: 600; }
+.favorites-menu .item-subtitle { font-size: 1.2rem; }
+
+/* Save Location Button */
+.add-favorite-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
   color: var(--on-surface-variant);
+}
+.add-favorite-btn .m-icon.active {
+  font-variation-settings: 'FILL' 1;
+  color: var(--primary);
 }
 
 @media (min-width: 768px) {
