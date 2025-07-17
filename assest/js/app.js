@@ -97,13 +97,8 @@ export const updateWeather = (lat, lon, locationName) => {
         currentLocationBtn.removeAttribute("disabled");
     }
 
-    const tempUnit = localStorage.getItem('temperature') || 'celsius';
-    const windUnit = localStorage.getItem('windSpeed') || 'ms';
-    const pressureUnit = localStorage.getItem('pressure') || 'hPa';
-    const distanceUnit = localStorage.getItem('distance') || 'km';
-    const timeFormat = localStorage.getItem('timeFormat') || '12h';
+    renderFavorites();
 
-    // --- Reverted to multiple API calls for compatibility ---
     fetchData(url.currentWeather(lat, lon), (currentWeather) => {
         if (!currentWeather || !currentWeather.weather) {
             error404();
@@ -115,9 +110,12 @@ export const updateWeather = (lat, lon, locationName) => {
         const card = document.createElement("div");
         card.classList.add("card", "card-lg", "current-weather-card");
         card.innerHTML = `
+            <button class="icon-btn add-favorite-btn" aria-label="Add to favorites" data-favorite-btn>
+                <span class="m-icon">star</span>
+            </button>
             <h2 class="title-2 card-title">Now</h2>
             <div class="weapper">
-                <p class="heading">${module.formatTemp(temp, tempUnit)}</p>
+                <p class="heading">${module.formatTemp(temp, localStorage.getItem('temperature') || 'celsius')}</p>
                 <img src="./assest/images/weather_icons/${icon}.png" width="64" height="64" alt="${description}" class="weather-icon">
             </div>
             <p class="body-3">${description}</p>
@@ -133,11 +131,17 @@ export const updateWeather = (lat, lon, locationName) => {
             </ul>
         `;
         
-        fetchData(url.reverseGeo(lat, lon), ([{ name, country, state }]) => {
-            const displayName = locationName || name;
-            const locationString = `${displayName}, ${state ? `${state}, ` : ''}${country}`;
-            card.querySelector("[data-location]").innerHTML = locationString;
-        });
+        const locationElement = card.querySelector("[data-location]");
+        const locationData = { lat, lon, name: locationName };
+        updateLocationName(locationElement, locationData);
+
+        const favoriteBtn = card.querySelector("[data-favorite-btn]");
+        const favoriteIcon = favoriteBtn.querySelector(".m-icon");
+        if (isFavorite(locationData)) {
+            favoriteIcon.classList.add("active");
+        }
+        favoriteBtn.addEventListener("click", () => toggleFavorite(favoriteBtn, locationData));
+
         currentWeatherSection.appendChild(card);
 
         fetchData(url.airPollution(lat, lon), (airPollution) => {
@@ -165,15 +169,15 @@ export const updateWeather = (lat, lon, locationName) => {
                         <h3 class="title-3">Sunrise & Sunset</h3>
                         <div class="wrapper">
                             <div class="card-list">
-                                <div class="card-item"><span class="m-icon">clear_day</span><div><p class="label-1">Sunrise</p><p class="title-1">${module.getTime(sunriseUnixUTC, timezone, timeFormat)}</p></div></div>
-                                <div class="card-item"><span class="m-icon">clear_night</span><div><p class="label-1">Sunset</p><p class="title-1">${module.getTime(sunsetUnixUTC, timezone, timeFormat)}</p></div></div>
+                                <div class="card-item"><span class="m-icon">clear_day</span><div><p class="label-1">Sunrise</p><p class="title-1">${module.getTime(sunriseUnixUTC, timezone, localStorage.getItem('timeFormat') || '12h')}</p></div></div>
+                                <div class="card-item"><span class="m-icon">clear_night</span><div><p class="label-1">Sunset</p><p class="title-1">${module.getTime(sunsetUnixUTC, timezone, localStorage.getItem('timeFormat') || '12h')}</p></div></div>
                             </div>
                         </div>
                     </div>
                     <div class="card card-sm highlight-card"><h3 class="title-3">Humidity</h3><div class="wrapper"><span class="m-icon">humidity_percentage</span><p class="title-1">${humidity}<sub>%</sub></p></div></div>
-                    <div class="card card-sm highlight-card"><h3 class="title-3">Pressure</h3><div class="wrapper"><span class="m-icon">airwave</span><p class="title-1">${module.formatPressure(pressure, pressureUnit)}</p></div></div>
-                    <div class="card card-sm highlight-card"><h3 class="title-3">Visibility</h3><div class="wrapper"><span class="m-icon">visibility</span><p class="title-1">${module.formatDistance(visibility, distanceUnit)}</p></div></div>
-                    <div class="card card-sm highlight-card"><h3 class="title-3">Feels Like</h3><div class="wrapper"><span class="m-icon">thermostat</span><p class="title-1">${module.formatTemp(feels_like, tempUnit)}</p></div></div>
+                    <div class="card card-sm highlight-card"><h3 class="title-3">Pressure</h3><div class="wrapper"><span class="m-icon">airwave</span><p class="title-1">${module.formatPressure(pressure, localStorage.getItem('pressure') || 'hPa')}</p></div></div>
+                    <div class="card card-sm highlight-card"><h3 class="title-3">Visibility</h3><div class="wrapper"><span class="m-icon">visibility</span><p class="title-1">${module.formatDistance(visibility, localStorage.getItem('distance') || 'km')}</p></div></div>
+                    <div class="card card-sm highlight-card"><h3 class="title-3">Feels Like</h3><div class="wrapper"><span class="m-icon">thermostat</span><p class="title-1">${module.formatTemp(feels_like, localStorage.getItem('temperature') || 'celsius')}</p></div></div>
                 </div>
             `;
             highlightSection.appendChild(card);
@@ -189,11 +193,11 @@ export const updateWeather = (lat, lon, locationName) => {
                 const [{ icon, description }] = weather;
                 const tempLi = document.createElement("li");
                 tempLi.classList.add("slider-item");
-                tempLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, timeFormat)}</p><img src="./assest/images/weather_icons/${icon}.png" width="48" height="48" loading="lazy" alt="${description}" class="weather-icon" title="${description}"><p class="body-3">${module.formatTemp(temp, tempUnit)}</p></div>`;
+                tempLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, localStorage.getItem('timeFormat') || '12h')}</p><img src="./assest/images/weather_icons/${icon}.png" width="48" height="48" loading="lazy" alt="${description}" class="weather-icon" title="${description}"><p class="body-3">${module.formatTemp(temp, localStorage.getItem('temperature') || 'celsius')}</p></div>`;
                 hourlySection.querySelector("[data-temp]").appendChild(tempLi);
                 const windLi = document.createElement("li");
                 windLi.classList.add("slider-item");
-                windLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, timeFormat)}</p><img src="./assest/images/weather_icons/direction.png" width="48" height="48" loading="lazy" alt="wind direction" class="weather-icon" style="transform: rotate(${windDirection - 180}deg)"><p class="body-3">${module.formatWind(windSpeed, windUnit)}</p></div>`;
+                windLi.innerHTML = `<div class="card card-sm slider-card"><p class="body-3">${module.getTime(dateTimeUnix, timezone, localStorage.getItem('timeFormat') || '12h')}</p><img src="./assest/images/weather_icons/direction.png" width="48" height="48" loading="lazy" alt="wind direction" class="weather-icon" style="transform: rotate(${windDirection - 180}deg)"><p class="body-3">${module.formatWind(windSpeed, localStorage.getItem('windSpeed') || 'ms')}</p></div>`;
                 hourlySection.querySelector("[data-wind]").appendChild(windLi);
             }
 
@@ -205,7 +209,6 @@ export const updateWeather = (lat, lon, locationName) => {
             `;
             const forecastListElement = forecastSection.querySelector("[data-forecast-list]");
             const uniqueForecastDays = [];
-
             const fiveDayForecast = forecastList.filter(forecast => {
                 const forecastDate = new Date(forecast.dt_txt).getDate();
                 if (!uniqueForecastDays.includes(forecastDate)) {
@@ -229,9 +232,7 @@ export const updateWeather = (lat, lon, locationName) => {
                 li.innerHTML = `
                     <div class="icon-wrapper">
                         <img src="./assest/images/weather_icons/${icon}.png" width="36" height="36" alt="${description}" class="weather-icon" title="${description}">
-                        <span class="span">
-                            <p class="title-2">${module.formatTemp(temp_max, tempUnit)}</p>
-                        </span>
+                        <span class="span"><p class="title-2">${module.formatTemp(temp_max, localStorage.getItem('temperature') || 'celsius')}</p></span>
                     </div>
                     <p class="label-1">${module.monthNames[date.getUTCMonth()]} ${date.getDate()}</p>
                     <p class="label-1">${module.weekDayNames[date.getUTCDay()]}</p>
@@ -251,6 +252,69 @@ export const error404 = () => {
     container.style.display = "none";
     errorContent.style.display = "flex";
 };
+
+// --- FAVORITES LOGIC ---
+const favoritesContainer = document.querySelector("[data-favorites-container]");
+const favoritesToggler = document.querySelector("[data-favorites-toggler]");
+const favoritesMenu = document.querySelector("[data-favorites-menu]");
+
+const getFavorites = () => JSON.parse(localStorage.getItem("weatherio-favorites")) || [];
+
+const saveFavorites = (favorites) => {
+    localStorage.setItem("weatherio-favorites", JSON.stringify(favorites));
+};
+
+const isFavorite = ({ lat, lon }) => {
+    const favorites = getFavorites();
+    return favorites.some(fav => fav.lat === lat && fav.lon === lon);
+};
+
+const toggleFavorite = (button, locationData) => {
+    const favorites = getFavorites();
+    const { lat, lon, name } = locationData;
+    const favoriteIcon = button.querySelector(".m-icon");
+
+    if (isFavorite(locationData)) {
+        const updatedFavorites = favorites.filter(fav => fav.lat !== lat || fav.lon !== lon);
+        saveFavorites(updatedFavorites);
+        favoriteIcon.classList.remove("active");
+    } else {
+        if (!name) {
+            fetchData(url.reverseGeo(lat, lon), ([{ name: resolvedName }]) => {
+                favorites.push({ lat, lon, name: resolvedName });
+                saveFavorites(favorites);
+                renderFavorites();
+            });
+        } else {
+            favorites.push({ lat, lon, name });
+            saveFavorites(favorites);
+        }
+        favoriteIcon.classList.add("active");
+    }
+    renderFavorites();
+};
+
+const renderFavorites = () => {
+    const favorites = getFavorites();
+    favoritesMenu.innerHTML = "";
+    if (favorites.length > 0) {
+        favoritesContainer.style.display = "block";
+        favorites.forEach(({ lat, lon, name }) => {
+            const item = document.createElement("div");
+            item.classList.add("view-item");
+            item.innerHTML = `
+                <a href="#/weather?lat=${lat}&lon=${lon}&name=${encodeURIComponent(name)}" class="item-link">
+                    <p class="item-title">${name}</p>
+                </a>
+            `;
+            favoritesMenu.appendChild(item);
+        });
+    } else {
+        favoritesContainer.style.display = "none";
+    }
+};
+
+favoritesToggler.addEventListener("click", () => favoritesMenu.classList.toggle("active"));
 
 // --- SETTINGS LOGIC ---
 const settingsBtn = document.querySelector("[data-settings-btn]");
@@ -296,3 +360,16 @@ const loadPreferences = () => {
 };
 
 window.addEventListener('DOMContentLoaded', loadPreferences);
+
+// --- HELPER FUNCTION FOR LOCATION NAME ---
+function updateLocationName(element, { lat, lon, name }) {
+    if (name) {
+        fetchData(url.reverseGeo(lat, lon), ([{ country, state }]) => {
+            element.innerHTML = `${name}, ${state ? `${state}, ` : ''}${country || ''}`;
+        });
+    } else {
+        fetchData(url.reverseGeo(lat, lon), ([{ name: resolvedName, country, state }]) => {
+            element.innerHTML = `${resolvedName}, ${state ? `${state}, ` : ''}${country || ''}`;
+        });
+    }
+}
