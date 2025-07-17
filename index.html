@@ -8,14 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
-    
-    <!-- Your CSS File -->
     <link rel="stylesheet" href="assest/css/style.css">
-
-    <!-- Your JS Files (defer ensures HTML is loaded first) -->
-    <script type="module" src="./assest/js/api.js" defer></script>
-    <script type="module" src="./assest/js/route.js" defer></script>
     <script type="module" src="./assest/js/app.js" defer></script>
+    <script type="module" src="./assest/js/route.js" defer></script>
 </head>
 <body>
     <header class="header">
@@ -23,9 +18,18 @@
             <a href="#" class="logo">
                 <img src="assest/images/logo.png" width="150" alt="logo">
             </a>
+
+            <!-- Favorites Dropdown -->
+            <div class="header-favorites" data-favorites-container>
+                <button class="icon-btn has-state" aria-label="open favorites" data-favorites-toggler>
+                    <span class="m-icon">favorite</span>
+                </button>
+                <div class="favorites-menu" data-favorites-menu></div>
+            </div>
+
             <div class="search-view" data-search-view>
                 <div class="search-wrapper">
-                    <input type="search" name="search" class="search-field" placeholder="Search city..." autocomplete="off" data-search-field>
+                    <input type="search" name="search" class="search-field" placeholder="Search city or zip..." autocomplete="off" data-search-field>
                     <span class="m-icon leading-icon">search</span>
                     <button class="icon-btn leading-icon has-state" aria-label="close search" data-search-toggler>
                         <span class="m-icon">arrow_back</span>
@@ -33,6 +37,7 @@
                 </div>
                 <div class="search-result" data-search-result></div>
             </div>
+
             <div class="header-actions">
                 <button class="icon-btn has-state" aria-label="open search" data-search-toggler>
                     <span class="m-icon">search</span>
@@ -50,7 +55,6 @@
 
     <main>
         <article class="container" data-container>
-            <!-- Basic layout structure added here -->
             <div class="content-left">
                 <section class="section current-weather" aria-label="current weather" data-current-weather></section>
                 <section class="section forecast" aria-labelledby="forecast-label" data-5-day-forecast></section>
@@ -95,13 +99,6 @@
                     <option value="mph">Miles per hour (mph)</option>
                     <option value="bft">Beaufort (bft)</option>
                     <option value="kn">Knots (kn)</option>
-                </select>
-            </div>
-            <div class="setting-group">
-                <label for="precip-unit" class="title-3">Precipitation</label>
-                <select id="precip-unit" class="setting-select" data-setting="precipitation">
-                    <option value="mm">Millimeters (mm)</option>
-                    <option value="in">Inches (in)</option>
                 </select>
             </div>
             <div class="setting-group">
