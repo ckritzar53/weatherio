@@ -32,20 +32,24 @@ export const aqiText = {
 };
 
 /**
- * **NEW:** Provides text and advice for different UV Index levels.
+ * **NEW:** Maps weather condition codes to CSS classes for dynamic backgrounds.
+ * @param {number} id - Weather condition code from OpenWeatherMap API.
+ * @param {string} icon - Weather icon code (e.g., "01d" for day, "01n" for night).
+ * @returns {string} The corresponding CSS class name.
  */
-export const uviText = {
-    1: { level: "Low", message: "No protection needed." },
-    2: { level: "Low", message: "No protection needed." },
-    3: { level: "Moderate", message: "Protection needed. Seek shade during midday hours." },
-    4: { level: "Moderate", message: "Protection needed. Seek shade during midday hours." },
-    5: { level: "Moderate", message: "Protection needed. Seek shade during midday hours." },
-    6: { level: "High", message: "Protection essential. Wear a hat and sunglasses." },
-    7: { level: "High", message: "Protection essential. Wear a hat and sunglasses." },
-    8: { level: "Very High", message: "Extra protection essential. Avoid being outside during midday." },
-    9: { level: "Very High", message: "Extra protection essential. Avoid being outside during midday." },
-    10: { level: "Very High", message: "Extra protection essential. Avoid being outside during midday." },
-    11: { level: "Extreme", message: "Extreme risk. Avoid being outside during midday." }
+export const getBackgroundClass = (id, icon) => {
+    if (id >= 200 && id <= 232) return 'bg-thunderstorm';
+    if (id >= 300 && id <= 321) return 'bg-drizzle';
+    if (id >= 500 && id <= 531) return 'bg-rain';
+    if (id >= 600 && id <= 622) return 'bg-snow';
+    if (id >= 701 && id <= 781) return 'bg-mist';
+    if (id === 800) {
+        // Check if it's day or night for clear sky
+        return icon.includes('n') ? 'bg-clear-night' : 'bg-clear-day';
+    }
+    if (id >= 801 && id <= 804) return 'bg-clouds';
+
+    return 'bg-default'; // Fallback background
 };
 
 
