@@ -15,6 +15,7 @@ const toggleSearch = () => searchView.classList.toggle("active");
 addEventOnElements(searchTogglers, "click", toggleSearch);
 
 
+// --- SIMPLIFIED AND MORE RELIABLE SEARCH LOGIC ---
 const searchField = document.querySelector("[data-search-field]");
 const searchResult = document.querySelector("[data-search-result]");
 let searchTimeout = null;
@@ -33,19 +34,17 @@ searchField.addEventListener("input", function () {
 
     if (searchField.value) {
         searchTimeout = setTimeout(() => {
-            const isZipCode = /^[0-9\s,-]+$/.test(searchField.value);
-            const searchUrl = isZipCode ? url.zip(searchField.value) : url.geo(searchField.value);
-
-            fetchData(searchUrl, function (data) {
+            // **FIX:** Always use the 'geo' endpoint for both city and zip code searches.
+            // It's more flexible and provides better results.
+            fetchData(url.geo(searchField.value), function (locations) {
                 searchField.classList.remove("searching");
                 searchResult.classList.add("active");
                 searchResult.innerHTML = `<ul class="view-list" data-search-list></ul>`;
 
-                const locations = Array.isArray(data) ? data : [data];
                 const searchList = searchResult.querySelector("[data-search-list]");
                 const items = [];
 
-                if (!locations || locations.length === 0 || !locations[0].name) {
+                if (!locations || locations.length === 0) {
                     const noResultItem = document.createElement("li");
                     noResultItem.classList.add("view-item");
                     noResultItem.innerHTML = `<p class="item-title">No results found.</p>`;
@@ -134,15 +133,14 @@ export const updateWeather = (lat, lon, locationName) => {
             </ul>
         `;
         
-        if (locationName) {
-            fetchData(url.reverseGeo(lat, lon), ([{ country }]) => {
-                card.querySelector("[data-location]").innerHTML = `${locationName}, ${country}`;
-            });
-        } else {
-            fetchData(url.reverseGeo(lat, lon), ([{ name, country }]) => {
-                card.querySelector("[data-location]").innerHTML = `${name}, ${country}`;
-            });
-        }
+        // **FIX:** This logic now fetches the state and includes it in the display.
+        fetchData(url.reverseGeo(lat, lon), ([{ name, country, state }]) => {
+            // Use the locationName from search if available, otherwise use the name from reverse geocoding.
+            const displayName = locationName || name;
+            // Display as "City, ST, Country" if state is available.
+            const locationString = `${displayName}, ${state ? `${state}, ` : ''}${country}`;
+            card.querySelector("[data-location]").innerHTML = locationString;
+        });
         currentWeatherSection.appendChild(card);
 
         fetchData(url.airPollution(lat, lon), (airPollution) => {
@@ -230,7 +228,6 @@ export const updateWeather = (lat, lon, locationName) => {
 
                 const li = document.createElement("li");
                 li.classList.add("card-item");
-                // **FIX:** Changed the date format to "Month Day"
                 li.innerHTML = `
                     <div class="icon-wrapper">
                         <img src="./assest/images/weather_icons/${icon}.png" width="36" height="36" alt="${description}" class="weather-icon" title="${description}">
