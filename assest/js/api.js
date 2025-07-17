@@ -16,36 +16,24 @@ export const fetchData = (URL, callback) => {
         .then(data => callback(data))
         .catch(err => {
             console.error("API Fetch Error:", err);
-            // On error, call the callback with an empty array to prevent crashes.
-            callback([]);
+            callback(null); // Pass null on error to be handled in the app.
         });
 };
 
 export const url = {
-    currentWeather(lat, lon) {
-        return `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric`;
-    },
-    forecast(lat, lon) {
-        return `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric`;
-    },
-    airPollution(lat, lon) {
-        return `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}`;
-    },
-    reverseGeo(lat, lon) {
-        return `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=5`;
+    /**
+     * **UPGRADED:** URL for the One Call API, which provides all necessary data.
+     * @param {number} lat - Latitude.
+     * @param {number} lon - Longitude.
+     */
+    oneCall(lat, lon) {
+        return `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&units=metric&exclude=minutely`;
     },
     /**
-     * URL for geocoding by city name.
-     * @param {string} query - Search query (e.g., "London").
+     * URL for geocoding by city name or zip code.
+     * @param {string} query - Search query (e.g., "London", "90210").
      */
     geo(query) {
         return `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5`;
-    },
-    /**
-     * **FIX:** Re-added the dedicated zip code endpoint for better accuracy.
-     * @param {string} query - Search query (e.g., "43551" or "43551,US").
-     */
-    zip(query) {
-        return `https://api.openweathermap.org/geo/1.0/zip?zip=${query}`;
     }
 };
