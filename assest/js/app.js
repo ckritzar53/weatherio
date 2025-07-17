@@ -29,14 +29,18 @@ searchField.addEventListener("input", function () {
 
     if (searchField.value) {
         searchTimeout = setTimeout(() => {
-            fetchData(url.geo(searchField.value), function (locations) {
+            const isZipCode = /^[0-9\s,-]+$/.test(searchField.value);
+            const searchUrl = isZipCode ? url.zip(searchField.value) : url.geo(searchField.value);
+
+            fetchData(searchUrl, function (data) {
                 searchField.classList.remove("searching");
                 searchResult.classList.add("active");
                 searchResult.innerHTML = `<ul class="view-list" data-search-list></ul>`;
+                const locations = Array.isArray(data) ? data : (data.name ? [data] : []);
                 const searchList = searchResult.querySelector("[data-search-list]");
                 const items = [];
 
-                if (!locations || locations.length === 0) {
+                if (locations.length === 0) {
                     const noResultItem = document.createElement("li");
                     noResultItem.classList.add("view-item");
                     noResultItem.innerHTML = `<p class="item-title">No results found.</p>`;
@@ -71,13 +75,11 @@ const container = document.querySelector("[data-container]");
 const loading = document.querySelector("[data-loading]");
 const currentLocationBtn = document.querySelector("[data-current-location-btn]");
 const errorContent = document.querySelector("[data-error-content]");
-const backgroundVideo = document.getElementById("background-video");
 
 export const updateWeather = (lat, lon, locationName) => {
     loading.style.display = "grid";
     container.style.display = "none";
     errorContent.style.display = "none";
-    if (backgroundVideo) backgroundVideo.classList.remove("visible");
 
     const currentWeatherSection = document.querySelector("[data-current-weather]");
     const highlightSection = document.querySelector("[data-highlights]");
@@ -104,18 +106,7 @@ export const updateWeather = (lat, lon, locationName) => {
         }
 
         const { weather, dt: dateUnix, sys: { sunrise: sunriseUnixUTC, sunset: sunsetUnixUTC }, main: { temp, feels_like, pressure, humidity }, visibility, timezone } = currentWeather;
-        const [{ description, icon, id: weatherId }] = weather;
-
-        if (backgroundVideo) {
-            const videoSrc = module.getVideoForWeather(weatherId, icon);
-            if (backgroundVideo.src !== videoSrc) {
-                backgroundVideo.src = videoSrc;
-                backgroundVideo.load();
-                backgroundVideo.play().catch(e => console.error("Video play failed:", e));
-            }
-            backgroundVideo.classList.add("visible");
-        }
-
+        const [{ description, icon }] = weather;
         const card = document.createElement("div");
         card.classList.add("card", "card-lg", "current-weather-card");
         card.innerHTML = `
@@ -198,7 +189,7 @@ export const updateWeather = (lat, lon, locationName) => {
             hourlySection.innerHTML = `<h2 class="title-2">Today at</h2><div class="slider-container"><ul class="slider-list" data-temp></ul><ul class="slider-list" data-wind></ul></div>`;
             for (const [index, data] of forecastList.entries()) {
                 if (index > 7) break;
-                const { dt: dateTimeUnix, main: { temp }, weather, wind: { deg: windDirection, speed: windSpeed }, pop } = data;
+                const { dt: dateTimeUnix, main: { temp }, weather, wind: { deg: windDirection, speed: windSpeed } } = data;
                 const [{ icon, description }] = weather;
                 const tempLi = document.createElement("li");
                 tempLi.classList.add("slider-item");
@@ -233,7 +224,7 @@ export const updateWeather = (lat, lon, locationName) => {
             }
 
             for (let i = startIndex; i < startIndex + 5 && i < fiveDayForecast.length; i++) {
-                const { main: { temp_max }, weather, dt_txt, pop } = fiveDayForecast[i];
+                const { main: { temp_max }, weather, dt_txt } = fiveDayForecast[i];
                 const [{ icon, description }] = weather;
                 const date = new Date(dt_txt);
                 const li = document.createElement("li");
@@ -275,7 +266,7 @@ const saveFavorites = (favorites) => {
 
 const isFavorite = ({ lat, lon }) => {
     const favorites = getFavorites();
-    return favorites.some(fav => fav.lat.toFixed(4) === lat.toFixed(4) && fav.lon.toFixed(4) === lon.toFixed(4));
+    return favorites.some(fav => fav.lat === lat && fav.lon === lon);
 };
 
 const toggleFavorite = (button, locationData) => {
@@ -284,7 +275,7 @@ const toggleFavorite = (button, locationData) => {
     const favoriteIcon = button.querySelector(".m-icon");
 
     if (isFavorite(locationData)) {
-        const updatedFavorites = favorites.filter(fav => fav.lat.toFixed(4) !== lat.toFixed(4) || fav.lon.toFixed(4) !== lon.toFixed(4));
+        const updatedFavorites = favorites.filter(fav => fav.lat !== lat || fav.lon !== lon);
         saveFavorites(updatedFavorites);
         favoriteIcon.classList.remove("active");
     } else {
@@ -323,11 +314,7 @@ const renderFavorites = () => {
     }
 };
 
-favoritesToggler.addEventListener("click", (e) => {
-    e.stopPropagation();
-    favoritesMenu.classList.toggle("active")
-});
-window.addEventListener("click", () => favoritesMenu.classList.remove("active"));
+favoritesToggler.addEventListener("click", () => favoritesMenu.classList.toggle("active"));
 
 // --- SETTINGS LOGIC ---
 const settingsBtn = document.querySelector("[data-settings-btn]");
