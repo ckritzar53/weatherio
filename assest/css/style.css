@@ -155,7 +155,11 @@ article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { backgroun
 .badge.aqi-4 { background-color: var(--bg-aqi-4); color: var(--on-bg-aqi-4); }
 .badge.aqi-5 { background-color: var(--bg-aqi-5); color: var(--on-bg-aqi-5); }
 .highlight-card.two .card-item { justify-content: flex-start; flex-wrap: wrap; gap: 8px 16px; }
-.slider-container { overflow-x: auto; margin-inline: -16px; }
+.slider-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  margin-inline: -16px;
+}
 .slider-container::-webkit-scrollbar { display: none; }
 .slider-list { display: flex; gap: 12px; }
 .slider-list:first-child { margin-block-end: 16px; }
@@ -217,14 +221,23 @@ article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { backgroun
 }
 
 /* **FIX:** Styles for Precipitation Chance */
-.card-item .m-icon { font-size: 1.8rem; color: var(--on-surface-variant); }
-.hourly-forecast .slider-card .card-item {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
+.card-item .m-icon {
+  font-size: 2.2rem; /* Slightly larger */
+  line-height: 1;
+  color: var(--on-surface-variant);
+  overflow: visible;
 }
+
+.hourly-forecast .slider-card .card-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  height: auto;
+  overflow: visible; /* Prevent clipping */
+}
+
 .forecast-card .icon-wrapper .card-item {
     gap: 4px;
 }
