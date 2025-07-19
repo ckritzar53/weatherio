@@ -274,7 +274,7 @@ article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { backgroun
   .highlight-card.two .card-item { column-gap: 24px; }
   .header .icon-btn[data-search-toggler] { display: none; }
   .logo img { width: 200px; }
-  .header { position: relative; height: 120px; z-index: 4; }
+  .header { position: relative; height: 120px; z-index: 4; margin: 0;}
   .header .container { padding-block: 0; height: 100%; justify-content: flex-start; gap: 24px; }
   .search-view, .search-view.active { all: unset; display: block; position: relative; width: 500px; animation: none; }
   .search-wrapper { border-block-end: none; }
