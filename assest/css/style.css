@@ -45,6 +45,11 @@
   --transition-short: 100ms ease;
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
 li { list-style: none; }
 a, img, span, input, button { display: block; }
 a { text-decoration: none; color: inherit; }
