@@ -55,7 +55,7 @@ button { cursor: pointer; }
 sub { vertical-align: baseline; }
 sup { vertical-align: top; }
 html { font-family: var(--ff-nunito-sans); font-size: 10px; scroll-behavior: smooth; }
-body { background-color: var(--background); color: var(--on-background); font-size: var(--body-3); }
+body { background-color: var(--background); color: var(--on-background); font-size: var(--body-3); margin: 0; padding: 0; }
 :focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background-color: var(--white-alpha-8); border-radius: var(--radius-pill); }
