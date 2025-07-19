@@ -59,7 +59,7 @@ input { width: 100%; }
 button { cursor: pointer; }
 sub { vertical-align: baseline; }
 sup { vertical-align: top; }
-html { font-family: var(--ff-nunito-sans); font-size: 10px; scroll-behavior: smooth; }
+html { font-family: var(--ff-nunito-sans); font-size: 10px; scroll-behavior: smooth; margin: 0; padding: 0; }
 body { background-color: var(--background); color: var(--on-background); font-size: var(--body-3); margin: 0; padding: 0; }
 :focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -258,8 +258,8 @@ article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { backgroun
   .header .btn-primary { padding-inline: 16px 24px; }
   .header .btn-primary .span { display: block; }
   .search-view { clip-path: circle(3% at calc(100% - 273px) 6%); }
-  main { height: calc(100vh - 96px); }
-  article.container { padding-block-start: 0; grid-template-columns: 280px minmax(0, 1fr); align-items: flex-start; gap: 24px; }
+  main { height: auto; }
+  article.container { padding-block-start: 0; grid-template-columns: 280px minmax(0, 1fr); align-items: flex-start; gap: 24px; height: 100%; }
   .content-left { position: sticky; top: 0; }
   .section:not(:last-child) { margin-block-end: 20px; }
   .forecast-card .card-item:not(:last-child) { margin-block-end: 16px; }
@@ -290,8 +290,8 @@ article.container:is(:hover, :focus-within)::-webkit-scrollbar-thumb { backgroun
   .search-view:focus-within .search-result { display: block; }
   .search-view:has(.search-result):focus-within .search-field { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
   .search-view .view-list { position: absolute; top: 100%; left: 0; width: 100%; max-height: 360px; border-radius: 0 0 var(--radius-28) var(--radius-28); border-block-start: 1px solid var(--outline); overflow-y: auto; }
-  main { height: calc(100vh - 120px); }
-  article.container { grid-template-columns: 360px minmax(0, 1fr); gap: 40px; }
+  main { height: auto; }
+  article.container { grid-template-columns: 360px minmax(0, 1fr); gap: 40px; height: 100%; }
   .current-weather .weather-icon { width: 80px; }
   .highlight-card:nth-child(-n + 2) { height: 200px; }
   .highlight-card:nth-child(n + 3) { height: 150px; }
